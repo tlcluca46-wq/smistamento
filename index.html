@@ -512,15 +512,6 @@ const DB_DEFAULT = [
 ];
 let DB = DB_DEFAULT.map(x => ({...x}));
 
-/* Cache per fuzzy matching */
-let vieUnicheCache = [];
-let paesiUniciCache = [];
-function rebuildCaches(){
-  vieUnicheCache = [...new Set(DB.map(e => e.via))];
-  paesiUniciCache = [...new Set(DB.map(e => e.paese))];
-}
-rebuildCaches();
-
 /* ============================================================
    NUMERI ITALIANI → CIFRE
    ============================================================ */
@@ -563,7 +554,6 @@ function numberToItWords(n){
   n = parseInt(n, 10);
   if (isNaN(n) || n < 0 || n > 999) return String(n);
   let word = _variants(n)[0];
-  // Accento su "tre" finale per una pronuncia più naturale (quarantatré, ventitré…)
   if (word.endsWith("tre") && word !== "tre"){
     word = word.slice(0, -3) + "tré";
   }
@@ -571,24 +561,122 @@ function numberToItWords(n){
 }
 
 /* ============================================================
-   NORMALIZZAZIONE + STOPWORDS
+   DUG (Denominazione Urbanistica Generica) - ampliato
    ============================================================ */
-const STOPWORDS = new Set(["di","del","della","dei","degli","delle","da","dal",
-  "dalla","dai","dagli","dalle","in","a","al","alla","ai","agli","alle","e","ed",
-  "la","il","lo","le","gli","l","d"]);
+const DUG_WORDS = new Set([
+  "via","viale","vle","vial","viali",
+  "piazza","piazzale","piazzetta","piazzett","piaz","piazz",
+  "vicolo","vic","vico","vicò","vialetto","vialetti",
+  "corso","cso","corsi",
+  "largo","lgo","larghi",
+  "strada","str","strade","stradella","stradone","stradoni",
+  "contrada","contra","contrà","contrade",
+  "lungargine","lungadige","lungarno","lungomare","lungolago","lungopo",
+  "riviera","circonvallazione","tangenziale","svincolo","rotonda","androna",
+  "calle","calletta","callesella","fondamenta","ramo","sotoportego","sotoport",
+  "salizada","liston","ruga","galleria","gall","passaggio","pass","traversa","trav",
+  "frazione","fraz","loc","localita","località","sottopasso","cavalcavia",
+  "passeggiata","belvedere",
+  "ta"
+]);
 
+/* ============================================================
+   Stopwords italiane
+   ============================================================ */
+const STOPWORDS = new Set([
+  "di","del","della","dei","degli","delle",
+  "da","dal","dalla","dai","dagli","dalle",
+  "in","a","al","alla","ai","agli","alle","e","ed",
+  "la","il","lo","le","gli","l","d",
+  "su","sul","sullo","sulla","sui","sugli","sulle",
+  "per","con","tra","fra","nel","nello","nella","nei","negli","nelle",
+  "un","uno","una"
+]);
+
+/* ============================================================
+   Sinonimi geografici
+   ============================================================ */
+const SYNONYM_GROUPS = [
+  ["s","san","santo","santa","santi","sant","santissimo","santissima"],
+  ["d","di","de","del","della","dello","dei","degli","delle"],
+  ["b","brenta","bosco","bassano"],
+  ["l","lupari"],
+  ["p","padovana"],
+  ["v","veneto"],
+  ["m","marchesana"],
+  ["petr","petrarca"],
+  ["poles","polesine"],
+  ["ates","atestino"],
+  ["vi","viminario"],
+  ["rio","viminario"]
+];
+
+/* ============================================================
+   Espansioni automatiche di nomi di paese abbreviati
+   ============================================================ */
+const COUNTRY_EXPANSIONS = {
+  "CAMPO S.MARTINO":  "Campo San Martino",
+  "CARMIGNANO B.":    "Carmignano di Brenta",
+  "PIAZZOLA B.":      "Piazzola sul Brenta",
+  "S. GIORGIO B.":    "San Giorgio in Bosco",
+  "S. MARTINO L.":    "San Martino di Lupari",
+  "VILLAFRANCA P.":   "Villafranca Padovana",
+  "S.CATERINA D'E.":  "Santa Caterina d'Este",
+  "S.PIETRO VI.RIO":  "San Pietro Viminario",
+  "ARQUA' PETR.":     "Arqua Petrarca",
+  "ARIANO POLES.":    "Ariano nel Polesine",
+  "PIACENZA D'A.":    "Piacenza d'Adige",
+  "BORGO V.":         "Borgo Veneto",
+  "VILLANOVA M.":     "Villanova Marchesana",
+  "LOZZO ATES.":      "Lozzo Atestino"
+};
+
+/* ============================================================
+   Normalizzazione, preprocess abbreviazioni, tokenizzazione
+   ============================================================ */
 function normalize(s){
   return (s || "").toLowerCase()
     .replace(/[''`]/g, " ")
     .replace(/[.,;:!?'"()\[\]\/]/g, " ")
     .replace(/\s+/g, " ").trim();
 }
+
+function preprocessAbbreviations(s){
+  return String(s)
+    .replace(/\bv\.?\s*le\b/gi, "viale")
+    .replace(/\bpiazz\.?\s*ta\b/gi, "piazzetta")
+    .replace(/\bpiaz\.?\s*ta\b/gi, "piazzetta")
+    .replace(/\bpiaz\.?\b/gi, "piazza")
+    .replace(/\bvic\.?\b/gi, "vicolo")
+    .replace(/\bstr\.?\b/gi, "strada")
+    .replace(/\bc\.?\s*so\b/gi, "corso")
+    .replace(/\blng\.?\b/gi, "lungargine")
+    .replace(/\bcont\.?\s*da\b/gi, "contrada")
+    .replace(/\bloc\.?\b/gi, "localita")
+    .replace(/\bfraz\.?\b/gi, "frazione")
+    .replace(/\blgo\.?\b/gi, "largo")
+    .replace(/\bgall\.?\b/gi, "galleria")
+    .replace(/\btrav\.?\b/gi, "traversa")
+    .replace(/\bpass\.?\b/gi, "passaggio");
+}
+
 function tokenizeNoStop(s){
-  return normalize(s).split(" ").filter(t => t && !STOPWORDS.has(t));
+  const pre = preprocessAbbreviations(s);
+  return normalize(pre).split(" ").filter(t => {
+    if (!t) return false;
+    if (STOPWORDS.has(t) || DUG_WORDS.has(t)) return false;
+    if (t.length > 1) return true;
+    return SYNONYM_GROUPS.some(g => g.indexOf(t) !== -1);
+  });
+}
+
+function countryToTokens(name){
+  const expanded = COUNTRY_EXPANSIONS[String(name).toUpperCase()] || name;
+  return tokenizeNoStop(expanded);
 }
 
 /* ============================================================
-   LEVENSHTEIN con cutoff
+   LEVENSHTEIN + sinonimi
    ============================================================ */
 function levenshtein(a, b, maxDist){
   if (Math.abs(a.length - b.length) > maxDist) return maxDist + 1;
@@ -612,64 +700,126 @@ function levenshtein(a, b, maxDist){
   return prev[n];
 }
 
+function tokensMatch(a, b){
+  if (a === b) return true;
+  for (const group of SYNONYM_GROUPS){
+    if (group.indexOf(a) !== -1 && group.indexOf(b) !== -1) return true;
+  }
+  return false;
+}
+
+function tokenDistance(a, b, maxD){
+  if (tokensMatch(a, b)) return 0;
+  return levenshtein(a, b, maxD);
+}
+
 /* ============================================================
-   FUZZY MATCHING
+   Cache tokenizzate
+   ============================================================ */
+let vieUnicheCache = [];
+let paesiUniciCache = [];
+let vieTokenizzate = [];
+let paesiTokenizzati = [];
+
+function rebuildCaches(){
+  const vieSet = new Set();
+  const paesiSet = new Set();
+  for (const e of DB){
+    vieSet.add(e.via);
+    paesiSet.add(e.paese);
+  }
+  vieUnicheCache = [...vieSet];
+  paesiUniciCache = [...paesiSet];
+  vieTokenizzate = vieUnicheCache
+    .map(v => ({ orig: v, tokens: tokenizeNoStop(v) }))
+    .filter(x => x.tokens.length > 0);
+  paesiTokenizzati = paesiUniciCache
+    .map(p => ({ orig: p, tokens: countryToTokens(p) }))
+    .filter(x => x.tokens.length > 0);
+}
+
+/* ============================================================
+   Fuzzy matching
    ============================================================ */
 function bestAlignment(textTokens, candTokens){
   const n = candTokens.length;
-  if (n === 0 || n > textTokens.length) return 0;
+  const m = textTokens.length;
+  if (n === 0 || m === 0) return 0;
+
   let bestSim = 0;
-  for (let i = 0; i <= textTokens.length - n; i++){
-    let totalDist = 0, totalLen = 0;
+  const minOffset = -n + 1;
+  const maxOffset = m - 1;
+
+  for (let offset = minOffset; offset <= maxOffset; offset++){
+    let totalDist = 0, totalLen = 0, covered = 0, considered = 0;
     for (let j = 0; j < n; j++){
-      const t = textTokens[i+j], c = candTokens[j];
+      const tIdx = j + offset;
+      if (tIdx < 0) continue;
+      if (tIdx >= m) continue;
+      considered++;
+      const t = textTokens[tIdx], c = candTokens[j];
       const maxLen = Math.max(t.length, c.length);
       const maxD = Math.max(1, Math.floor(maxLen / 3));
-      const d = levenshtein(t, c, maxD);
+      const d = tokenDistance(t, c, maxD);
+      if (d <= maxD) covered++;
       totalDist += Math.min(d, maxLen);
       totalLen += maxLen;
     }
+    if (considered === 0) continue;
     const sim = totalLen > 0 ? 1 - totalDist / totalLen : 0;
-    if (sim > bestSim) bestSim = sim;
+    const inputCovered = covered / m;
+    const adjusted = sim * (0.5 + 0.5 * inputCovered);
+    if (adjusted > bestSim) bestSim = adjusted;
   }
   return bestSim;
 }
 
-function findBestMatch(textTokens, candidates){
-  let best = null;
+function findTopMatches(textTokens, candidates, topN){
+  const scored = [];
   for (const cand of candidates){
-    const candTokens = tokenizeNoStop(cand);
-    if (!candTokens.length) continue;
-    const sim = bestAlignment(textTokens, candTokens);
-    if (sim >= FUZZY_THRESHOLD && (!best || sim > best.sim)){
-      best = { match: cand, sim };
+    if (!cand.tokens || !cand.tokens.length) continue;
+    const sim = bestAlignment(textTokens, cand.tokens);
+    if (sim >= FUZZY_THRESHOLD){
+      scored.push({ match: cand.orig, sim });
     }
   }
-  return best;
+  scored.sort((a, b) => b.sim - a.sim);
+  return scored.slice(0, topN);
 }
 
 function fuzzyCorrect(raw){
   let t = normalize(raw);
   t = replaceNumbers(t);
   const tokens = t.split(" ").filter(Boolean);
-  const tokensNoStop = tokens.filter(tk => !STOPWORDS.has(tk));
+  const tokensNoStop = tokens.filter(tk =>
+    tk && tk.length > 1 && !STOPWORDS.has(tk) && !DUG_WORDS.has(tk)
+  );
   if (!tokensNoStop.length) return null;
 
-  const bestVia = findBestMatch(tokensNoStop, vieUnicheCache);
-  const bestPaese = findBestMatch(tokensNoStop, paesiUniciCache);
-  if (!bestVia || !bestPaese) return null;
+  const topVie = findTopMatches(tokensNoStop, vieTokenizzate, 5);
+  const topPaesi = findTopMatches(tokensNoStop, paesiTokenizzati, 3);
+  if (!topVie.length || !topPaesi.length) return null;
 
   const civMatch = t.match(/\b(\d{1,4})\b/);
   const civico = civMatch ? civMatch[1] : "";
 
-  const corrected = [bestVia.match, civico, bestPaese.match].filter(Boolean).join(" ");
-  return {
-    text: corrected,
-    via: bestVia.match,
-    paese: bestPaese.match,
-    civico: civico ? parseInt(civico, 10) : null,
-    sim: (bestVia.sim + bestPaese.sim) / 2
-  };
+  for (const via of topVie){
+    for (const paese of topPaesi){
+      const corrected = [via.match, civico, paese.match].filter(Boolean).join(" ");
+      const r = lookup(corrected);
+      if (r.ok){
+        return {
+          text: corrected,
+          result: r,
+          via: via.match,
+          paese: paese.match,
+          civico: civico ? parseInt(civico, 10) : null,
+          sim: (via.sim + paese.sim) / 2
+        };
+      }
+    }
+  }
+  return null;
 }
 
 /* ============================================================
@@ -677,7 +827,7 @@ function fuzzyCorrect(raw){
    ============================================================ */
 function lookup(raw){
   if (!raw || !raw.trim()) return { ok:false, message:"Nessun testo." };
-  let t = normalize(raw);
+  let t = normalize(preprocessAbbreviations(raw));
   t = replaceNumbers(t);
 
   const pairs = [], seen = new Set();
@@ -749,11 +899,9 @@ function lookupSmart(raw){
   const exact = lookup(raw);
   if (exact.ok) return exact;
   const fz = fuzzyCorrect(raw);
-  if (fz){
-    const r = lookup(fz.text);
-    if (r.ok){
-      return { ...r, fuzzy:true, original:raw, corrected:fz.text, fuzzySim:fz.sim };
-    }
+  if (fz && fz.result && fz.result.ok){
+    return { ...fz.result, fuzzy:true, original:raw,
+             corrected: fz.text, fuzzySim: fz.sim };
   }
   return exact;
 }
@@ -776,8 +924,6 @@ function pickItalianVoice(){
       || null;
 }
 
-// Converte un codice casellario in una forma pronunciabile a voce.
-// Esempi: "11-A" -> "undici A" ; "63" -> "sessantatré" ; "24-B" -> "ventiquattro B"
 function codeToSpeech(code){
   const s = String(code).trim();
   const m = s.match(/^(\d+)(?:-([A-Za-z]+))?$/);
@@ -1373,6 +1519,8 @@ function tryAdminLogin(){
    BOOT
    ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
+  rebuildCaches();  // popola le cache ORA che tutte le costanti sono definite
+
   recognition = initRecognition();
   if (!recognition){
     setDot('error');
