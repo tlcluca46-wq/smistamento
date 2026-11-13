@@ -5,11 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Assistente Smistamento Postale</title>
 <style>
-  /* ============================================================
-     TEMA POSTE ITALIANE
-     Giallo ufficiale: #F3D829
-     Blu ufficiale:    #0050B9
-     ============================================================ */
   :root{
     --poste-yellow: #F3D829;
     --poste-blue:   #0050B9;
@@ -41,40 +36,34 @@
     justify-content:space-between;
     gap:16px;
     box-shadow: 0 4px 14px rgba(0,0,0,.35);
+    flex-wrap:wrap;
   }
-  .logo-wrap{
-    display:flex;
-    align-items:center;
-    gap:14px;
-  }
-  .logo-wrap img{
-    height:44px;
-    width:auto;
-    display:block;
-  }
+  .logo-wrap{ display:flex; align-items:center; gap:14px; }
+  .logo-wrap img{ height:44px; width:auto; display:block; }
   .logo-wrap .app-name{
-    font-weight:800;
-    font-size:1.1rem;
-    color: var(--poste-blue-dark);
-    letter-spacing:.3px;
+    font-weight:800; font-size:1.1rem;
+    color: var(--poste-blue-dark); letter-spacing:.3px;
   }
+  .header-right{ display:flex; align-items:center; gap:10px; }
   .header-state{
-    font-weight:700;
-    font-size:.8rem;
-    text-transform:uppercase;
-    letter-spacing:1.2px;
+    font-weight:700; font-size:.8rem;
+    text-transform:uppercase; letter-spacing:1.2px;
     color: var(--poste-blue-dark);
     background: rgba(255,255,255,.45);
-    padding:6px 12px;
-    border-radius:999px;
+    padding:6px 12px; border-radius:999px;
   }
+  .admin-btn{
+    background: var(--poste-blue-dark);
+    color:#fff; border:none;
+    padding:8px 14px; border-radius:999px;
+    font:inherit; font-weight:700; font-size:.8rem;
+    cursor:pointer; letter-spacing:.5px;
+    transition:.15s;
+  }
+  .admin-btn:hover{ background: var(--poste-blue); }
 
   /* ---------- LAYOUT ---------- */
-  main{
-    max-width:860px;
-    margin:0 auto;
-    padding:22px;
-  }
+  main{ max-width:860px; margin:0 auto; padding:22px; }
   .card{
     background: var(--card);
     border-radius:16px;
@@ -85,206 +74,131 @@
   }
 
   /* ---------- RISULTATO ---------- */
-  .result{
-    display:flex;
-    align-items:center;
-    gap:24px;
-    flex-wrap:wrap;
-  }
+  .result{ display:flex; align-items:center; gap:24px; flex-wrap:wrap; }
   .big{
-    flex:0 0 auto;
-    min-width:170px;
-    text-align:center;
+    flex:0 0 auto; min-width:170px; text-align:center;
     background: var(--poste-blue-dark);
-    border-radius:16px;
-    padding:14px 22px;
+    border-radius:16px; padding:14px 22px;
     border: 2px solid var(--poste-yellow);
   }
   .big .label{
-    font-size:.75rem;
-    letter-spacing:2px;
-    color: var(--poste-yellow);
-    text-transform:uppercase;
-    font-weight:700;
+    font-size:.75rem; letter-spacing:2px;
+    color: var(--poste-yellow); text-transform:uppercase; font-weight:700;
   }
   .big .num{
-    font-size:4.2rem;
-    font-weight:900;
-    color: var(--poste-yellow);
-    line-height:1;
-    margin-top:6px;
+    font-size:4.2rem; font-weight:900;
+    color: var(--poste-yellow); line-height:1; margin-top:6px;
     text-shadow: 0 2px 8px rgba(0,0,0,.4);
   }
-  .details{flex:1 1 260px}
-  .details .addr{
-    font-size:1.35rem;
-    font-weight:700;
-    line-height:1.3;
-  }
-  .details .note{
-    color: var(--muted);
-    margin-top:6px;
-    font-size:.95rem;
-  }
+  .details{ flex:1 1 260px; }
+  .details .addr{ font-size:1.35rem; font-weight:700; line-height:1.3; }
+  .details .note{ color: var(--muted); margin-top:6px; font-size:.95rem; }
 
   /* ---------- CONTROLLI ---------- */
-  .controls{
-    display:flex;
-    gap:14px;
-    align-items:center;
-    flex-wrap:wrap;
-  }
+  .controls{ display:flex; gap:14px; align-items:center; flex-wrap:wrap; }
   button{
-    font:inherit;
-    border:none;
-    border-radius:12px;
-    padding:14px 20px;
-    cursor:pointer;
-    font-weight:700;
-    transition:.15s;
-    font-size:1rem;
+    font:inherit; border:none; border-radius:12px;
+    padding:14px 20px; cursor:pointer; font-weight:700;
+    transition:.15s; font-size:1rem;
   }
-  button:active{transform:scale(.97)}
+  button:active{ transform:scale(.97); }
   .mic{
-    background: var(--poste-yellow);
-    color: var(--poste-blue-dark);
-    min-width:250px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:10px;
-    box-shadow: 0 4px 0 #B8A200;
+    background: var(--poste-yellow); color: var(--poste-blue-dark);
+    min-width:250px; display:flex; align-items:center; justify-content:center;
+    gap:10px; box-shadow: 0 4px 0 #B8A200;
   }
   .mic.on{
-    background: var(--err);
-    color:#fff;
-    box-shadow: 0 4px 0 #A93226;
+    background: var(--err); color:#fff; box-shadow: 0 4px 0 #A93226;
     animation:pulse 1.6s infinite;
   }
   @keyframes pulse{
     0%,100%{box-shadow:0 0 0 0 rgba(231,76,60,.7), 0 4px 0 #A93226}
     50%{box-shadow:0 0 0 14px rgba(231,76,60,0), 0 4px 0 #A93226}
   }
-  .ghost{
-    background: var(--card2);
-    color: var(--txt);
-    border: 1px solid #1E5BA8;
-  }
-  .ghost:hover{
-    background: #00468F;
-  }
-
+  .ghost{ background: var(--card2); color: var(--txt); border: 1px solid #1E5BA8; }
+  .ghost:hover{ background: #00468F; }
   .dot{
-    width:14px;
-    height:14px;
-    border-radius:50%;
-    background:#445;
-    display:inline-block;
-    vertical-align:middle;
-    margin-right:8px;
-    transition:.2s;
+    width:14px; height:14px; border-radius:50%; background:#445;
+    display:inline-block; vertical-align:middle; margin-right:8px; transition:.2s;
   }
-  .dot.listening{
-    background: var(--ok);
-    box-shadow: 0 0 12px var(--ok);
-  }
-  .dot.speaking{
-    background: var(--poste-yellow);
-    box-shadow: 0 0 12px var(--poste-yellow);
-  }
-  .dot.error{
-    background: var(--err);
-  }
-  .status{
-    color: var(--muted);
-    font-size:.9rem;
-    display:flex;
-    align-items:center;
-  }
+  .dot.listening{ background: var(--ok); box-shadow: 0 0 12px var(--ok); }
+  .dot.speaking{ background: var(--poste-yellow); box-shadow: 0 0 12px var(--poste-yellow); }
+  .dot.error{ background: var(--err); }
+  .status{ color: var(--muted); font-size:.9rem; display:flex; align-items:center; }
 
   /* ---------- INPUT MANUALE ---------- */
-  .manual{
-    display:flex;
-    gap:10px;
-    margin-top:6px;
-  }
+  .manual{ display:flex; gap:10px; margin-top:6px; }
   .manual input{
-    flex:1;
-    font:inherit;
-    padding:14px 16px;
-    border-radius:12px;
-    border: 2px solid #1E5BA8;
-    background: var(--card2);
-    color: var(--txt);
-    font-size:1.05rem;
+    flex:1; font:inherit; padding:14px 16px; border-radius:12px;
+    border: 2px solid #1E5BA8; background: var(--card2);
+    color: var(--txt); font-size:1.05rem;
   }
-  .manual input::placeholder{
-    color: #7C93AE;
-  }
-  .manual input:focus{
-    outline: none;
-    border-color: var(--poste-yellow);
-  }
-  .live{
-    margin-top:10px;
-    color: var(--muted);
-    font-style:italic;
-    min-height:1.4em;
-  }
-  .live b{color:var(--txt); font-style:normal}
+  .manual input::placeholder{ color: #7C93AE; }
+  .manual input:focus{ outline:none; border-color: var(--poste-yellow); }
+  .live{ margin-top:10px; color: var(--muted); font-style:italic; min-height:1.4em; }
+  .live b{ color:var(--txt); font-style:normal; }
 
   /* ---------- STORICO ---------- */
-  .history{
-    list-style:none;
-    padding:0;
-    margin:0;
-  }
+  .history{ list-style:none; padding:0; margin:0; }
   .history li{
-    padding:8px 0;
-    border-bottom:1px solid #1E4C8A;
-    font-size:.9rem;
-    color: var(--muted);
+    padding:8px 0; border-bottom:1px solid #1E4C8A;
+    font-size:.9rem; color: var(--muted);
   }
-  .history li b{
-    color: var(--poste-yellow);
-    font-size:1.05rem;
-  }
+  .history li b{ color: var(--poste-yellow); font-size:1.05rem; }
 
-  /* ---------- CSV ---------- */
-  details summary{
-    cursor:pointer;
-    font-weight:700;
+  /* ---------- MODALE ADMIN ---------- */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(0,10,25,.82);
+    backdrop-filter: blur(6px);
+    display:none; align-items:center; justify-content:center;
+    z-index:1000; padding:20px;
+  }
+  .modal-overlay.open{ display:flex; }
+  .modal{
+    background: var(--card);
+    border-radius:18px; padding:26px;
+    width:100%; max-width:720px; max-height:92vh; overflow-y:auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,.6);
+    border: 1px solid rgba(243,216,41,.3);
+  }
+  .modal h2{
+    margin:0 0 16px 0; font-size:1.25rem;
     color: var(--poste-yellow);
-    padding:4px 0;
+    display:flex; align-items:center; gap:10px;
   }
-  textarea{
-    width:100%;
-    min-height:150px;
-    margin-top:10px;
-    background: #001428;
-    color: var(--txt);
-    border: 1px solid #1E5BA8;
-    border-radius:10px;
-    padding:10px;
-    font-family:ui-monospace,monospace;
-    font-size:.85rem;
+  .modal input[type="password"]{
+    width:100%; font:inherit; padding:14px 16px; border-radius:12px;
+    border:2px solid #1E5BA8; background: var(--card2);
+    color: var(--txt); font-size:1.15rem; letter-spacing:2px;
   }
-  .row{
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
-    margin-top:10px;
+  .modal input[type="password"]:focus{ outline:none; border-color: var(--poste-yellow); }
+  .modal-actions{
+    display:flex; gap:12px; margin-top:18px; justify-content:flex-end; flex-wrap:wrap;
   }
-  .warn{
-    color: #FFCC66;
-    font-size:.85rem;
-    margin-top:8px;
+  .modal textarea{
+    width:100%; min-height:180px; margin-top:10px;
+    background: #001428; color: var(--txt);
+    border: 1px solid #1E5BA8; border-radius:10px;
+    padding:10px; font-family:ui-monospace,monospace; font-size:.85rem;
   }
+  .modal .warn{ color:#FFCC66; font-size:.85rem; margin-top:8px; }
+  .modal .row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+  .login-error{
+    color: var(--err); font-weight:700; margin-top:12px;
+    min-height:1.3em; font-size:.9rem;
+  }
+  .shake{ animation:shake .4s; }
+  @keyframes shake{
+    0%,100%{transform:translateX(0)}
+    25%{transform:translateX(-8px)}
+    75%{transform:translateX(8px)}
+  }
+  details summary{ cursor:pointer; font-weight:700; color: var(--poste-yellow); padding:4px 0; }
 </style>
 </head>
 <body>
 
-<!-- ================= HEADER POSTE ITALIANE ================= -->
+<!-- ================= HEADER ================= -->
 <header>
   <div class="logo-wrap">
     <img src="https://upload.wikimedia.org/wikipedia/commons/2/2c/Logo_Poste_Italiane.svg"
@@ -293,11 +207,13 @@
     <span class="app-name" style="display:none;">POSTE ITALIANE</span>
     <span class="app-name">Assistente Smistamento</span>
   </div>
-  <span class="header-state" id="headerState">inattivo</span>
+  <div class="header-right">
+    <span class="header-state" id="headerState">inattivo</span>
+    <button class="admin-btn" id="adminBtn">🔒 Admin</button>
+  </div>
 </header>
 
 <main>
-  <!-- RISULTATO -->
   <div class="card result">
     <div class="big">
       <div class="label">Portalettere</div>
@@ -309,7 +225,6 @@
     </div>
   </div>
 
-  <!-- CONTROLLI -->
   <div class="card">
     <div class="controls">
       <button class="mic" id="micBtn">🎙️ Attiva microfono</button>
@@ -324,38 +239,66 @@
     </div>
   </div>
 
-  <!-- STORICO -->
   <div class="card">
     <div style="font-weight:700; margin-bottom:8px">Ultime richieste</div>
     <ul class="history" id="history"><li>Nessuna richiesta.</li></ul>
   </div>
+</main>
 
-  <!-- CSV -->
-  <div class="card">
-    <details>
-      <summary>⚙️ Gestione database (CSV)</summary>
+<!-- ================= MODALE ADMIN ================= -->
+<div class="modal-overlay" id="adminModal">
+  <div class="modal" id="adminBox">
+
+    <!-- Login -->
+    <div id="loginView">
+      <h2>🔒 Accesso amministratore</h2>
+      <p style="color:var(--muted); font-size:.9rem; margin:0 0 14px 0;">
+        La gestione del database è riservata. Inserisci la password per accedere.
+      </p>
+      <input type="password" id="adminPass" placeholder="Password" autocomplete="off">
+      <div class="login-error" id="loginError"></div>
+      <div class="modal-actions">
+        <button class="ghost" id="cancelLogin">Annulla</button>
+        <button class="mic" id="submitLogin" style="min-width:auto; padding:14px 24px;">Accedi</button>
+      </div>
+    </div>
+
+    <!-- Pannello -->
+    <div id="panelView" style="display:none;">
+      <h2>⚙️ Gestione database</h2>
       <p class="warn">
         Formato: <code>via,civico_da,civico_a,paese,cap,portalettere</code><br>
-        Virgola o punto e virgola. Intestazione facoltativa.
+        Lasciare <code>civico_da</code> e <code>civico_a</code> vuoti = via coperta interamente.<br>
+        Accetta virgola o punto-e-virgola. Intestazione facoltativa.
       </p>
       <textarea id="csvArea"></textarea>
       <div class="row">
         <button class="ghost" id="loadCsvBtn">Carica CSV</button>
         <button class="ghost" id="downloadCsvBtn">Scarica CSV attuale</button>
         <button class="ghost" id="resetDbBtn">Ripristina DB di esempio</button>
+        <button class="ghost" id="reloadServerBtn">🔄 Ricarica da file</button>
       </div>
-      <div class="status" id="csvStatus" style="margin-top:8px"></div>
-    </details>
+      <div class="status" id="csvStatus" style="margin-top:12px;"></div>
+      <div class="modal-actions">
+        <button class="ghost" id="logoutBtn">🔒 Blocca</button>
+        <button class="mic" id="closePanelBtn" style="min-width:auto; padding:14px 24px;">Chiudi</button>
+      </div>
+    </div>
+
   </div>
-</main>
+</div>
 
 <script>
 /* ============================================================
-   TUTTO IL JAVASCRIPT È IDENTICO ALLA VERSIONE PRECEDENTE
-   (nessuna modifica alle funzionalità)
+   CONFIGURAZIONE ADMIN
+   Cambia qui la password in produzione.
    ============================================================ */
+const ADMIN_PASSWORD = "123456";
+const ADMIN_SESSION_KEY = "assistente_smistamento_admin";
 
-/* ============ DB DI ESEMPIO (~100 vie, 10 comuni) ============ */
+/* ============================================================
+   DB DI ESEMPIO (~100 vie, 10 comuni) — con civico opzionale
+   ============================================================ */
 const DB_DEFAULT = [
   // Gravina di Catania
   { via:"Via Roma",da:1,a:199,paese:"Gravina di Catania",cap:"95030",portalettere:"39"},
@@ -512,7 +455,7 @@ function numberToItWords(n){
   return _variants(n)[0];
 }
 
-/* ============ Parser / lookup ============ */
+/* ============ Parser / lookup (civico opzionale) ============ */
 function normalize(s){
   return (s || "").toLowerCase()
     .replace(/[.,;:!?'"()\[\]\/]/g, " ")
@@ -522,6 +465,7 @@ function lookup(raw){
   if (!raw || !raw.trim()) return { ok:false, message:"Nessun testo." };
   let t = normalize(raw);
   t = replaceNumbers(t);
+
   const pairs = [], seen = new Set();
   for (const e of DB){
     const via = normalize(e.via), paese = normalize(e.paese);
@@ -535,25 +479,58 @@ function lookup(raw){
   if (!pairs.length) return { ok:false, message:"Nessuna via/comune nel database.", transcript: raw };
   pairs.sort((a,b) => b.score - a.score);
   const top = pairs[0];
+
   const viaIdx = t.indexOf(top.via);
   const after = t.slice(viaIdx + top.via.length);
   const m = after.match(/\b(\d{1,4})\b/);
   const civico = m ? parseInt(m[1], 10) : null;
-  const entries = DB.filter(e => normalize(e.via) === top.via && normalize(e.paese) === top.paese);
-  const displayVia = entries[0].via, displayPaese = entries[0].paese, displayCap = entries[0].cap;
+
+  const entries = DB.filter(e =>
+    normalize(e.via) === top.via && normalize(e.paese) === top.paese);
+  const displayVia = entries[0].via;
+  const displayPaese = entries[0].paese;
+  const displayCap = entries[0].cap;
+
+  const generiche  = entries.filter(e => e.da == null && e.a == null);
+  const specifiche = entries.filter(e => e.da != null && e.a != null);
+
+  // ---- CASO A: civico NON indicato
   if (civico === null){
+    if (generiche.length === 1 && specifiche.length === 0){
+      return { ok:true, portalettere:[generiche[0].portalettere],
+               via:displayVia, paese:displayPaese, cap:displayCap, civico:null,
+               message:`${displayVia}, ${displayPaese} — tutta la via, portalettere ${generiche[0].portalettere}.` };
+    }
+    if (generiche.length === 1 && specifiche.length > 0){
+      const plGen = generiche[0].portalettere;
+      const plSpec = [...new Set(specifiche.map(e => e.portalettere).filter(p => p !== plGen))];
+      const nota = plSpec.length ? ` (alcuni civici: ${plSpec.join(", ")})` : "";
+      return { ok:true, portalettere:[plGen],
+               via:displayVia, paese:displayPaese, cap:displayCap, civico:null,
+               message:`${displayVia}, ${displayPaese} — di base portalettere ${plGen}${nota}.` };
+    }
     const postini = [...new Set(entries.map(e => e.portalettere))];
-    return { ok:true, portalettere: postini, via: displayVia, paese: displayPaese, cap: displayCap,
-             civico:null, message:`Civico non indicato. ${displayVia}, ${displayPaese}. Portalettere ${postini.join(", ")}.` };
+    return { ok:true, portalettere:postini,
+             via:displayVia, paese:displayPaese, cap:displayCap, civico:null,
+             message:`Civico non indicato. ${displayVia}, ${displayPaese}. Portalettere: ${postini.join(", ")}.` };
   }
-  const match = entries.find(e => civico >= e.da && civico <= e.a);
-  if (!match){
-    const postini = [...new Set(entries.map(e => e.portalettere))];
-    return { ok:true, portalettere: postini, via: displayVia, paese: displayPaese, cap: displayCap, civico,
-             message:`Civico ${civico} fuori range per ${displayVia}, ${displayPaese}. Portalettere: ${postini.join(", ")}.` };
+
+  // ---- CASO B: civico indicato
+  const matchSpec = specifiche.find(e => civico >= e.da && civico <= e.a);
+  if (matchSpec){
+    return { ok:true, portalettere:[matchSpec.portalettere],
+             via:displayVia, paese:displayPaese, cap:displayCap, civico,
+             message:`${displayVia} ${civico} — ${displayPaese} (${displayCap})` };
   }
-  return { ok:true, portalettere:[match.portalettere], via: displayVia, paese: displayPaese, cap: displayCap, civico,
-           message:`${displayVia} ${civico} — ${displayPaese} (${displayCap})` };
+  if (generiche.length === 1){
+    return { ok:true, portalettere:[generiche[0].portalettere],
+             via:displayVia, paese:displayPaese, cap:displayCap, civico,
+             message:`${displayVia} ${civico} — ${displayPaese} (${displayCap}). Via coperta interamente.` };
+  }
+  const postini = [...new Set(entries.map(e => e.portalettere))];
+  return { ok:true, portalettere:postini,
+           via:displayVia, paese:displayPaese, cap:displayCap, civico,
+           message:`Civico ${civico} fuori range per ${displayVia}, ${displayPaese}. Portalettere della via: ${postini.join(", ")}.` };
 }
 
 /* ============ VOCI / TTS ============ */
@@ -609,10 +586,8 @@ function beep(freq = 800, dur = 80, vol = 0.12){
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
     osc.connect(gain); gain.connect(audioCtx.destination);
-    osc.frequency.value = freq;
-    gain.gain.value = vol;
-    osc.start();
-    osc.stop(audioCtx.currentTime + dur/1000);
+    osc.frequency.value = freq; gain.gain.value = vol;
+    osc.start(); osc.stop(audioCtx.currentTime + dur/1000);
   } catch(_){}
 }
 function beepStart(){ beep(800,70); setTimeout(()=>beep(1100,90), 90); }
@@ -649,7 +624,7 @@ function renderResult(res, raw){
     || "<li>Nessuna richiesta.</li>";
 }
 
-/* ============ STATO ============ */
+/* ============ STATO RICONOSCIMENTO ============ */
 let recognition = null;
 let wantListening = false;
 let speaking = false;
@@ -708,9 +683,8 @@ function initRecognition(){
 
 function startRecognition(){
   if (!recognition || !wantListening || speaking) return;
-  try {
-    recognition.start();
-  } catch(e){
+  try { recognition.start(); }
+  catch(e){
     if (e.name === 'InvalidStateError') return;
     setTimeout(startRecognition, 500);
   }
@@ -744,10 +718,7 @@ function handle(text, source){
   renderResult(res, text);
   setLive("");
 
-  if (!res.ok){
-    processing = false;
-    return;
-  }
+  if (!res.ok){ processing = false; return; }
 
   speaking = true;
   setDot('speaking');
@@ -792,35 +763,226 @@ function toggleMic(){
   }
 }
 
-/* ============ CSV ============ */
-function parseCSV(text){
-  const lines = text.trim().split(/\r?\n/).filter(l => l.trim().length);
-  if (!lines.length) return [];
-  const sep = lines[0].includes(";") ? ";" : ",";
-  let start = 0;
-  const firstCols = lines[0].split(sep);
-  if (firstCols.length > 1 && isNaN(parseInt(firstCols[1], 10))) start = 1;
+/* ============ CSV (parser robusto + civico opzionale) ============ */
+function detectSeparator(text) {
+  const first = text.split(/\r?\n/)[0] || '';
+  return (first.split(';').length > first.split(',').length) ? ';' : ',';
+}
+
+function parseCSV(text) {
+  if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+  const sep = detectSeparator(text);
+  const rows = [];
+  let row = [], cur = '', inQ = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQ) {
+      if (c === '"') {
+        if (text[i+1] === '"') { cur += '"'; i++; }
+        else inQ = false;
+      } else cur += c;
+    } else {
+      if (c === '"') inQ = true;
+      else if (c === sep) { row.push(cur); cur = ''; }
+      else if (c === '\n' || c === '\r') {
+        if (c === '\r' && text[i+1] === '\n') i++;
+        row.push(cur); cur = '';
+        if (row.some(x => x.trim() !== '')) rows.push(row);
+        row = [];
+      } else cur += c;
+    }
+  }
+  if (cur !== '' || row.length) {
+    row.push(cur);
+    if (row.some(x => x.trim() !== '')) rows.push(row);
+  }
+  return rows;
+}
+
+function normalizeHeader(h) {
+  const k = (h || '').trim().toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, '_');
+  const map = {
+    via:          ['via','indirizzo','street','strada'],
+    da:           ['civico_da','da','civico_inizio','inizio','start','min','civico_min'],
+    a:            ['civico_a','a','civico_fine','fine','end','max','civico_max'],
+    civico:       ['civico','numero','num','civ','n'],
+    paese:        ['paese','comune','city','citta','localita','town'],
+    cap:          ['cap','zip','postal_code','codice_postale','codicepostale'],
+    portalettere: ['portalettere','postino','pl','zona','posta','team','routing','assegnazione','codice']
+  };
+  for (const key in map) if (map[key].includes(k)) return key;
+  return null;
+}
+
+function rowsToEntries(rows) {
+  if (!rows.length) return [];
+  const first = rows[0].map(c => (c || '').trim().toLowerCase());
+  const headerWords = ['via','indirizzo','civico','paese','comune','cap','portalettere','postino','zona'];
+  const hasHeader = first.some(c => headerWords.some(w => c.includes(w)));
+
+  let idx = null, dataRows = rows;
+  if (hasHeader) {
+    idx = {};
+    rows[0].forEach((h, i) => {
+      const k = normalizeHeader(h);
+      if (k && idx[k] == null) idx[k] = i;
+    });
+    dataRows = rows.slice(1);
+  } else {
+    idx = { via:0, da:1, a:2, paese:3, cap:4, portalettere:5 };
+  }
+
+  if (idx.via == null || idx.paese == null) return [];
+
   const out = [];
-  for (let i = start; i < lines.length; i++){
-    const p = lines[i].split(sep).map(s => s.trim());
-    if (p.length < 4) continue;
-    out.push({ via:p[0], da:parseInt(p[1],10)||1, a:parseInt(p[2],10)||999,
-               paese:p[3], cap:p[4]||"", portalettere:p[5]||p[4]||"" });
+  const seen = new Set();
+  for (const r of dataRows) {
+    const get = k => idx[k] != null ? (r[idx[k]] || '').trim() : '';
+    const via = get('via');
+    const paese = get('paese');
+    const portalettere = get('portalettere');
+    if (!via || !paese || !portalettere) continue;
+
+    let da = null, a = null;
+    if (idx.civico != null) {
+      const raw = get('civico').replace(/[^\d]/g, '');
+      if (raw !== '') {
+        const n = parseInt(raw, 10);
+        if (!isNaN(n)) { da = a = n; }
+      }
+    } else {
+      const rawDa = get('da').replace(/[^\d]/g, '');
+      const rawA  = get('a').replace(/[^\d]/g, '');
+      const nDa = rawDa !== '' ? parseInt(rawDa, 10) : null;
+      const nA  = rawA  !== '' ? parseInt(rawA, 10)  : null;
+      if (nDa === 0 && nA === 0) { /* placeholder "tutta la via" */ }
+      else if (nDa != null && nA != null) {
+        da = Math.min(nDa, nA);
+        a  = Math.max(nDa, nA);
+      } else if (nDa != null) { da = a = nDa; }
+      else if (nA  != null) { da = a = nA; }
+    }
+
+    const key = `${via.toLowerCase()}|${da}|${a}|${paese.toLowerCase()}|${portalettere}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    out.push({ via, da, a, paese, cap: get('cap'), portalettere });
   }
   return out;
 }
-function toCSV(rows){
-  const head = "via,civico_da,civico_a,paese,cap,portalettere";
-  const body = rows.map(r => [r.via,r.da,r.a,r.paese,r.cap,r.portalettere]
-    .map(v => String(v).includes(",") ? `"${v}"` : v).join(","));
-  return [head,...body].join("\n");
+
+function toCSV(rows) {
+  const esc = v => {
+    const s = String(v == null ? '' : v);
+    return /[",;\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const head = 'via,civico_da,civico_a,paese,cap,portalettere';
+  const body = rows.map(r => [
+    r.via,
+    r.da == null ? '' : r.da,
+    r.a  == null ? '' : r.a,
+    r.paese,
+    r.cap,
+    r.portalettere
+  ].map(esc).join(','));
+  return [head, ...body].join('\r\n');
 }
-function download(filename, content){
-  const blob = new Blob([content], {type:"text/csv;charset=utf-8;"});
+
+function download(filename, content) {
+  const blob = new Blob([content], {type:'text/csv;charset=utf-8;'});
   const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
+  const a = document.createElement('a');
   a.href = url; a.download = filename; a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+async function loadCsvFromServer(url) {
+  const t0 = performance.now();
+  try {
+    const res = await fetch(url, { cache: 'no-cache' });
+    if (!res.ok) return { ok:false, message:`File ${url} non trovato (HTTP ${res.status})` };
+    const text = await res.text();
+    const entries = rowsToEntries(parseCSV(text));
+    if (!entries.length) return { ok:false, message:'File letto ma nessuna riga valida.' };
+    DB = entries;
+    return { ok:true, count: entries.length, ms: Math.round(performance.now() - t0) };
+  } catch (e) {
+    return { ok:false, message: e.message };
+  }
+}
+
+function loadCsvFromText(text) {
+  const entries = rowsToEntries(parseCSV(text));
+  if (!entries.length) return { ok:false, message:'Nessuna riga valida.' };
+  DB = entries;
+  return { ok:true, count: entries.length };
+}
+
+/* ============================================================
+   ADMIN — modale protetto da password
+   ============================================================ */
+function isAdminUnlocked(){
+  return sessionStorage.getItem(ADMIN_SESSION_KEY) === "1";
+}
+function lockAdmin(){
+  sessionStorage.removeItem(ADMIN_SESSION_KEY);
+  $("loginView").style.display = "block";
+  $("panelView").style.display = "none";
+  $("adminPass").value = "";
+  $("loginError").textContent = "";
+}
+function unlockAdmin(){
+  sessionStorage.setItem(ADMIN_SESSION_KEY, "1");
+  $("loginView").style.display = "none";
+  $("panelView").style.display = "block";
+  refreshCsvPanel();
+}
+function refreshCsvPanel(){
+  if (DB.length <= 500){
+    $("csvArea").value = toCSV(DB);
+    $("csvArea").placeholder = "";
+  } else {
+    $("csvArea").value = "";
+    $("csvArea").placeholder =
+      `DB caricato con ${DB.length} righe (troppe per essere mostrate qui).\n` +
+      `Usa "Scarica CSV attuale" per vederlo o incolla un nuovo CSV e premi "Carica CSV".`;
+  }
+}
+function openAdminModal(){
+  // Ferma microfono se attivo
+  if (wantListening){
+    wantListening = false;
+    try { recognition && recognition.stop(); } catch(_){}
+    updateMicBtn();
+  }
+  $("adminModal").classList.add("open");
+  if (isAdminUnlocked()){
+    unlockAdmin();
+  } else {
+    lockAdmin();
+    setTimeout(() => $("adminPass").focus(), 100);
+  }
+}
+function closeAdminModal(){
+  $("adminModal").classList.remove("open");
+}
+
+function tryAdminLogin(){
+  const pwd = $("adminPass").value;
+  if (pwd === ADMIN_PASSWORD){
+    $("loginError").textContent = "";
+    unlockAdmin();
+  } else {
+    $("loginError").textContent = "❌ Password errata.";
+    $("adminBox").classList.remove("shake");
+    void $("adminBox").offsetWidth;
+    $("adminBox").classList.add("shake");
+    $("adminPass").value = "";
+    $("adminPass").focus();
+  }
 }
 
 /* ============ BOOT ============ */
@@ -831,8 +993,10 @@ document.addEventListener("DOMContentLoaded", () => {
     setStatusText("⚠️ Riconoscimento vocale non supportato. Usa Chrome/Edge.");
   }
 
+  // --- Microfono
   micBtn.addEventListener("click", toggleMic);
 
+  // --- Input manuale
   $("manualInput").addEventListener("keydown", e => {
     if (e.key === "Enter"){
       const v = e.target.value.trim();
@@ -849,20 +1013,59 @@ document.addEventListener("DOMContentLoaded", () => {
     el.value = "";
   });
 
-  $("loadCsvBtn").addEventListener("click", () => {
-    const rows = parseCSV($("csvArea").value);
-    if (!rows.length){ $("csvStatus").textContent = "⚠️ Nessuna riga valida."; return; }
-    DB = rows;
-    $("csvStatus").textContent = `✅ Caricate ${rows.length} righe.`;
+  // --- Admin
+  $("adminBtn").addEventListener("click", openAdminModal);
+  $("cancelLogin").addEventListener("click", closeAdminModal);
+  $("submitLogin").addEventListener("click", tryAdminLogin);
+  $("adminPass").addEventListener("keydown", e => {
+    if (e.key === "Enter") tryAdminLogin();
+    if (e.key === "Escape") closeAdminModal();
   });
+  $("logoutBtn").addEventListener("click", () => {
+    lockAdmin();
+    refreshCsvPanel();
+  });
+  $("closePanelBtn").addEventListener("click", closeAdminModal);
+
+  // --- Pannello CSV
+  $("loadCsvBtn").addEventListener("click", () => {
+    const r = loadCsvFromText($("csvArea").value);
+    if (r.ok){
+      $("csvStatus").textContent = `✅ Caricate ${r.count} righe dalla textarea.`;
+    } else {
+      $("csvStatus").textContent = `⚠️ ${r.message}`;
+    }
+  });
+
   $("downloadCsvBtn").addEventListener("click", () => download("portalettere.csv", toCSV(DB)));
+
   $("resetDbBtn").addEventListener("click", () => {
     DB = DB_DEFAULT.map(x => ({...x}));
     $("csvStatus").textContent = `↺ Ripristinate ${DB.length} righe di esempio.`;
-    $("csvArea").value = toCSV(DB);
+    refreshCsvPanel();
   });
 
-  $("csvArea").value = toCSV(DB);
+  $("reloadServerBtn").addEventListener("click", async () => {
+    $("csvStatus").textContent = "⏳ Ricaricamento da portalettere.csv…";
+    const r = await loadCsvFromServer('portalettere.csv');
+    if (r.ok){
+      $("csvStatus").textContent = `✅ Ricaricate ${r.count} righe da file in ${r.ms} ms.`;
+      refreshCsvPanel();
+    } else {
+      $("csvStatus").textContent = `⚠️ ${r.message}`;
+    }
+  });
+
+  // --- Caricamento automatico del CSV dal server all'avvio
+  (async () => {
+    const r = await loadCsvFromServer('portalettere.csv');
+    if (r.ok){
+      // OK silenzioso (nessun pannello aperto all'avvio)
+      console.info(`[DB] Caricate ${r.count} righe da portalettere.csv in ${r.ms} ms.`);
+    } else {
+      console.info(`[DB] ${r.message} — uso il DB di esempio (${DB.length} righe).`);
+    }
+  })();
 });
 </script>
 </body>
