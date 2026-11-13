@@ -1,9 +1,16 @@
+<!--
+  SortVox — Assistente Smistamento Postale
+  © 2026 Luca Americi — Tutti i diritti riservati
+  Lean Professional presso il Centro Smistamento di Padova
+-->
 <!DOCTYPE html>
 <html lang="it">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Assistente Smistamento Postale</title>
+<title>SortVox — Assistente Smistamento Postale</title>
+<meta name="author" content="Luca Americi">
+<meta name="description" content="SortVox — Assistente vocale per lo smistamento postale. Ideato da Luca Americi, Lean Professional presso il Centro Smistamento di Padova.">
 <style>
   :root{
     --poste-yellow:#F3D829; --poste-blue:#0050B9; --poste-blue-dark:#003B8A;
@@ -151,6 +158,18 @@
   .log-fuzzy{color:#FFCC66;font-size:.75rem}
 
   details summary{cursor:pointer;font-weight:700;color:var(--poste-yellow);padding:4px 0}
+
+  /* FOOTER */
+  .app-footer{
+    text-align:center;
+    padding:22px 16px 32px;
+    color:var(--muted);
+    font-size:.8rem;
+    line-height:1.6;
+    border-top:1px solid rgba(255,255,255,.06);
+    margin-top:20px;
+  }
+  .app-footer strong{color:var(--poste-yellow);font-weight:700}
 </style>
 </head>
 <body>
@@ -161,7 +180,7 @@
          alt="Poste Italiane"
          onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
     <span class="app-name" style="display:none;">POSTE ITALIANE</span>
-    <span class="app-name">Assistente Smistamento</span>
+    <span class="app-name">SortVox</span>
   </div>
   <div class="header-right">
     <span class="header-state" id="headerState">inattivo</span>
@@ -202,11 +221,17 @@
   </div>
 </main>
 
-<!-- ============ MODALE ADMIN ============ -->
+<footer class="app-footer">
+  <div>© 2026 <strong>SortVox</strong> — Tutti i diritti riservati</div>
+  <div style="margin-top:6px;">
+    Ideato e sviluppato da <strong>Luca Americi</strong><br>
+    Lean Professional presso il Centro Smistamento di Padova
+  </div>
+</footer>
+
 <div class="modal-overlay" id="adminModal">
   <div class="modal" id="adminBox">
 
-    <!-- Login -->
     <div id="loginView">
       <h2>🔒 Accesso amministratore</h2>
       <p style="color:var(--muted);font-size:.9rem;margin:0 0 14px 0;">
@@ -220,7 +245,6 @@
       </div>
     </div>
 
-    <!-- Pannello a tab -->
     <div id="panelView" style="display:none;">
       <h2>⚙️ Pannello amministratore</h2>
 
@@ -231,7 +255,6 @@
         <button class="tab" data-tab="security">Sicurezza</button>
       </div>
 
-      <!-- TAB DATABASE -->
       <div class="tab-content active" id="tab-db">
         <p class="warn">
           Formato: <code>via,civico_da,civico_a,paese,cap,portalettere</code><br>
@@ -257,7 +280,6 @@
         <div class="status" id="csvStatus" style="margin-top:12px;"></div>
       </div>
 
-      <!-- TAB STATISTICHE -->
       <div class="tab-content" id="tab-stats">
         <div class="stats-grid">
           <div class="stat-card">
@@ -292,7 +314,6 @@
         </div>
       </div>
 
-      <!-- TAB LOG -->
       <div class="tab-content" id="tab-log">
         <p style="color:var(--muted);font-size:.9rem;">
           Ultime 50 ricerche (su un massimo di 1000 conservate nel browser).
@@ -320,7 +341,6 @@
         </div>
       </div>
 
-      <!-- TAB SICUREZZA -->
       <div class="tab-content" id="tab-security">
         <h3>Cambia password amministratore</h3>
         <p style="color:var(--muted);font-size:.9rem;">
@@ -569,7 +589,7 @@ function tokenizeNoStop(s){
 }
 
 /* ============================================================
-   LEVENSHTEIN con cutoff (early exit)
+   LEVENSHTEIN con cutoff
    ============================================================ */
 function levenshtein(a, b, maxDist){
   if (Math.abs(a.length - b.length) > maxDist) return maxDist + 1;
@@ -594,7 +614,7 @@ function levenshtein(a, b, maxDist){
 }
 
 /* ============================================================
-   FUZZY MATCHING (token-based, sliding window)
+   FUZZY MATCHING
    ============================================================ */
 function bestAlignment(textTokens, candTokens){
   const n = candTokens.length;
@@ -640,7 +660,6 @@ function fuzzyCorrect(raw){
   const bestPaese = findBestMatch(tokensNoStop, paesiUniciCache);
   if (!bestVia || !bestPaese) return null;
 
-  // Civico: primo numero di 1-4 cifre nel testo
   const civMatch = t.match(/\b(\d{1,4})\b/);
   const civico = civMatch ? civMatch[1] : "";
 
@@ -655,7 +674,7 @@ function fuzzyCorrect(raw){
 }
 
 /* ============================================================
-   LOOKUP ESATTO (invariato, con civico opzionale)
+   LOOKUP ESATTO
    ============================================================ */
 function lookup(raw){
   if (!raw || !raw.trim()) return { ok:false, message:"Nessun testo." };
@@ -727,7 +746,6 @@ function lookup(raw){
     message:`Civico ${civico} fuori range per ${displayVia}, ${displayPaese}. Portalettere della via: ${postini.join(", ")}.` };
 }
 
-/* Lookup "intelligente": esatto → fuzzy */
 function lookupSmart(raw){
   const exact = lookup(raw);
   if (exact.ok) return exact;
@@ -803,7 +821,7 @@ function beepStart(){ beep(800,70); setTimeout(()=>beep(1100,90), 90); }
 function beepStop(){ beep(500,140,0.1); }
 
 /* ============================================================
-   STORAGE: password, statistiche, log
+   STORAGE
    ============================================================ */
 function hashPwd(s){
   let h = 5381;
@@ -878,7 +896,6 @@ function saveLog(log){
 }
 let lastLoggedKey = { text:"", ts:0 };
 function recordLog(raw, res, source, fuzzy){
-  // Dedup: stesso testo entro 5 secondi (evita spam da mic)
   const key = (raw || "").trim().toLowerCase();
   const now = Date.now();
   if (key === lastLoggedKey.text && (now - lastLoggedKey.ts) < 5000 && source === 'voice'){
@@ -1032,7 +1049,6 @@ function handle(text, source){
 
   const res = lookupSmart(text);
 
-  // In modalità vocale, se non c'è match → ignora silenziosamente
   if (!res.ok && source === 'voice'){
     processing = false;
     setLive("");
@@ -1234,7 +1250,7 @@ function loadCsvFromText(text){
 }
 
 /* ============================================================
-   ADMIN — sessione, modale, tabs
+   ADMIN
    ============================================================ */
 function isAdminUnlocked(){
   return sessionStorage.getItem(ADMIN_SESSION_KEY) === "1";
@@ -1372,7 +1388,6 @@ document.addEventListener("DOMContentLoaded", () => {
     el.value = "";
   });
 
-  // --- Admin modal
   $("adminBtn").addEventListener("click", openAdminModal);
   $("cancelLogin").addEventListener("click", closeAdminModal);
   $("submitLogin").addEventListener("click", tryAdminLogin);
@@ -1386,7 +1401,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   $("closePanelBtn").addEventListener("click", closeAdminModal);
 
-  // --- Tab switching
   document.querySelectorAll(".tab").forEach(t => {
     t.addEventListener("click", () => {
       document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
@@ -1398,7 +1412,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // --- CSV: textarea
   $("loadCsvBtn").addEventListener("click", () => {
     const r = loadCsvFromText($("csvArea").value);
     if (r.ok){
@@ -1428,7 +1441,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // --- CSV: upload file (drag & drop + selettore)
   const uploadBox = $("uploadBox");
   const fileInput = $("fileInput");
   function handleFile(file){
@@ -1477,7 +1489,6 @@ document.addEventListener("DOMContentLoaded", () => {
       handleFile(e.dataTransfer.files[0]);
   });
 
-  // --- Statistiche
   $("resetStatsBtn").addEventListener("click", () => {
     if (!confirm("Azzerare tutte le statistiche? L'operazione non è reversibile.")) return;
     saveStats({ totale:0, match:0, ko:0, fuzzy:0, oggi:0, dataOggi:todayKey(),
@@ -1485,7 +1496,6 @@ document.addEventListener("DOMContentLoaded", () => {
     refreshStats();
   });
 
-  // --- Log
   $("exportLogBtn").addEventListener("click", () => {
     const log = getLog();
     if (!log.length){ alert("Nessuna voce da esportare."); return; }
@@ -1506,7 +1516,6 @@ document.addEventListener("DOMContentLoaded", () => {
     refreshLog();
   });
 
-  // --- Sicurezza: cambio password
   $("savePwdBtn").addEventListener("click", () => {
     const oldP = $("pwdOld").value;
     const newP = $("pwdNew").value;
@@ -1541,13 +1550,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // --- Caricamento automatico del CSV dal server all'avvio
   (async () => {
     const r = await loadCsvFromServer('portalettere.csv');
     if (r.ok){
-      console.info(`[DB] Caricate ${r.count} righe da portalettere.csv in ${r.ms} ms.`);
+      console.info(`[SortVox] Caricate ${r.count} righe da portalettere.csv in ${r.ms} ms.`);
     } else {
-      console.info(`[DB] ${r.message} — uso il DB di esempio (${DB.length} righe).`);
+      console.info(`[SortVox] ${r.message} — uso il DB di esempio (${DB.length} righe).`);
     }
   })();
 });
