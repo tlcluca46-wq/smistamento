@@ -12,68 +12,60 @@
 <meta name="author" content="Luca Americi">
 <meta name="description" content="SortVox — Assistente vocale per lo smistamento postale. Ideato da Luca Americi, Lean Professional presso il Centro Smistamento di Padova.">
 <style>
-  :root{
-    --poste-yellow:#F3D829; --poste-blue:#0050B9; --poste-blue-dark:#003B8A;
-    --bg:#001F3F; --card:#002B5C; --card2:#003A7A;
-    --ok:#2ECC71; --err:#E74C3C; --txt:#EAF0F6; --muted:#8FA3B8;
-  }
+  :root{--poste-yellow:#F3D829;--poste-blue:#0050B9;--poste-blue-dark:#003B8A;
+    --bg:#001F3F;--card:#002B5C;--card2:#003A7A;--ok:#2ECC71;--err:#E74C3C;
+    --txt:#EAF0F6;--muted:#8FA3B8}
   *{box-sizing:border-box}
   body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
        background:var(--bg);color:var(--txt);min-height:100vh}
-  header{background:var(--poste-yellow);padding:14px 22px;display:flex;
-         align-items:center;justify-content:space-between;gap:16px;
-         box-shadow:0 4px 14px rgba(0,0,0,.35);flex-wrap:wrap}
+  header{background:var(--poste-yellow);padding:14px 22px;display:flex;align-items:center;
+    justify-content:space-between;gap:16px;box-shadow:0 4px 14px rgba(0,0,0,.35);flex-wrap:wrap}
   .logo-wrap{display:flex;align-items:center;gap:14px}
   .logo-wrap img{height:44px;width:auto;display:block}
   .logo-wrap .app-name{font-weight:800;font-size:1.1rem;color:var(--poste-blue-dark)}
   .header-right{display:flex;align-items:center;gap:10px}
-  .header-state{font-weight:700;font-size:.8rem;text-transform:uppercase;
-                letter-spacing:1.2px;color:var(--poste-blue-dark);
-                background:rgba(255,255,255,.45);padding:6px 12px;border-radius:999px}
-  .admin-btn{background:var(--poste-blue-dark);color:#fff;border:none;
-             padding:8px 14px;border-radius:999px;font:inherit;font-weight:700;
-             font-size:.8rem;cursor:pointer;letter-spacing:.5px;transition:.15s}
+  .header-state{font-weight:700;font-size:.8rem;text-transform:uppercase;letter-spacing:1.2px;
+    color:var(--poste-blue-dark);background:rgba(255,255,255,.45);padding:6px 12px;border-radius:999px}
+  .admin-btn{background:var(--poste-blue-dark);color:#fff;border:none;padding:8px 14px;
+    border-radius:999px;font:inherit;font-weight:700;font-size:.8rem;cursor:pointer;
+    letter-spacing:.5px;transition:.15s}
   .admin-btn:hover{background:var(--poste-blue)}
   main{max-width:860px;margin:0 auto;padding:22px}
   .card{background:var(--card);border-radius:16px;padding:20px;margin-bottom:16px;
-        box-shadow:0 6px 20px rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.06)}
+    box-shadow:0 6px 20px rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.06)}
   .result{display:flex;align-items:center;gap:24px;flex-wrap:wrap}
   .big{flex:0 0 auto;min-width:170px;text-align:center;background:var(--poste-blue-dark);
-       border-radius:16px;padding:14px 22px;border:2px solid var(--poste-yellow)}
+    border-radius:16px;padding:14px 22px;border:2px solid var(--poste-yellow)}
   .big .label{font-size:.75rem;letter-spacing:2px;color:var(--poste-yellow);
-              text-transform:uppercase;font-weight:700}
+    text-transform:uppercase;font-weight:700}
   .big .num{font-size:4.2rem;font-weight:900;color:var(--poste-yellow);
-            line-height:1;margin-top:6px;text-shadow:0 2px 8px rgba(0,0,0,.4)}
+    line-height:1;margin-top:6px;text-shadow:0 2px 8px rgba(0,0,0,.4)}
   .details{flex:1 1 260px}
   .details .addr{font-size:1.35rem;font-weight:700;line-height:1.3}
   .details .note{color:var(--muted);margin-top:6px;font-size:.95rem}
   .fuzzy-note{color:#FFCC66;font-size:.85rem;margin-top:6px}
   .controls{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
-  button{font:inherit;border:none;border-radius:12px;padding:14px 20px;
-         cursor:pointer;font-weight:700;transition:.15s;font-size:1rem}
+  button{font:inherit;border:none;border-radius:12px;padding:14px 20px;cursor:pointer;
+    font-weight:700;transition:.15s;font-size:1rem}
   button:active{transform:scale(.97)}
   .mic{background:var(--poste-yellow);color:var(--poste-blue-dark);min-width:250px;
-       display:flex;align-items:center;justify-content:center;gap:10px;
-       box-shadow:0 4px 0 #B8A200}
-  .mic.on{background:var(--err);color:#fff;box-shadow:0 4px 0 #A93226;
-          animation:pulse 1.6s infinite}
-  @keyframes pulse{
-    0%,100%{box-shadow:0 0 0 0 rgba(231,76,60,.7), 0 4px 0 #A93226}
-    50%{box-shadow:0 0 0 14px rgba(231,76,60,0), 0 4px 0 #A93226}}
+    display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 4px 0 #B8A200}
+  .mic.on{background:var(--err);color:#fff;box-shadow:0 4px 0 #A93226;animation:pulse 1.6s infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(231,76,60,.7),0 4px 0 #A93226}
+    50%{box-shadow:0 0 0 14px rgba(231,76,60,0),0 4px 0 #A93226}}
   .ghost{background:var(--card2);color:var(--txt);border:1px solid #1E5BA8}
   .ghost:hover{background:#00468F}
   .danger{background:#A93226;color:#fff}
   .danger:hover{background:#7B241C}
   .dot{width:14px;height:14px;border-radius:50%;background:#445;display:inline-block;
-       vertical-align:middle;margin-right:8px;transition:.2s}
+    vertical-align:middle;margin-right:8px;transition:.2s}
   .dot.listening{background:var(--ok);box-shadow:0 0 12px var(--ok)}
   .dot.speaking{background:var(--poste-yellow);box-shadow:0 0 12px var(--poste-yellow)}
   .dot.error{background:var(--err)}
   .status{color:var(--muted);font-size:.9rem;display:flex;align-items:center}
   .manual{display:flex;gap:10px;margin-top:6px}
   .manual input{flex:1;font:inherit;padding:14px 16px;border-radius:12px;
-                border:2px solid #1E5BA8;background:var(--card2);color:var(--txt);
-                font-size:1.05rem}
+    border:2px solid #1E5BA8;background:var(--card2);color:var(--txt);font-size:1.05rem}
   .manual input::placeholder{color:#7C93AE}
   .manual input:focus{outline:none;border-color:var(--poste-yellow)}
   .live{margin-top:10px;color:var(--muted);font-style:italic;min-height:1.4em}
@@ -81,67 +73,55 @@
   .history{list-style:none;padding:0;margin:0}
   .history li{padding:8px 0;border-bottom:1px solid #1E4C8A;font-size:.9rem;color:var(--muted)}
   .history li b{color:var(--poste-yellow);font-size:1.05rem}
-
-  .modal-overlay{position:fixed;inset:0;background:rgba(0,10,25,.85);
-    backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;
-    z-index:1000;padding:20px}
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,10,25,.85);backdrop-filter:blur(6px);
+    display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
   .modal-overlay.open{display:flex}
-  .modal{background:var(--card);border-radius:18px;padding:26px;width:100%;
-         max-width:820px;max-height:92vh;overflow-y:auto;
-         box-shadow:0 20px 60px rgba(0,0,0,.6);border:1px solid rgba(243,216,41,.3)}
+  .modal{background:var(--card);border-radius:18px;padding:26px;width:100%;max-width:820px;
+    max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.6);
+    border:1px solid rgba(243,216,41,.3)}
   .modal h2{margin:0 0 16px 0;font-size:1.25rem;color:var(--poste-yellow);
-            display:flex;align-items:center;gap:10px}
+    display:flex;align-items:center;gap:10px}
   .modal h3{margin:18px 0 10px 0;font-size:1rem;color:var(--poste-yellow)}
-  .modal input[type="password"],.modal input[type="text"]{
-    width:100%;font:inherit;padding:14px 16px;border-radius:12px;
-    border:2px solid #1E5BA8;background:var(--card2);color:var(--txt);font-size:1.05rem}
+  .modal input[type="password"],.modal input[type="text"]{width:100%;font:inherit;
+    padding:14px 16px;border-radius:12px;border:2px solid #1E5BA8;
+    background:var(--card2);color:var(--txt);font-size:1.05rem}
   .modal input[type="password"]{letter-spacing:2px}
   .modal input:focus{outline:none;border-color:var(--poste-yellow)}
-  .modal-actions{display:flex;gap:12px;margin-top:18px;justify-content:flex-end;
-                 flex-wrap:wrap}
+  .modal-actions{display:flex;gap:12px;margin-top:18px;justify-content:flex-end;flex-wrap:wrap}
   .modal textarea{width:100%;min-height:180px;margin-top:10px;background:#001428;
     color:var(--txt);border:1px solid #1E5BA8;border-radius:10px;padding:10px;
     font-family:ui-monospace,monospace;font-size:.85rem}
   .modal .warn{color:#FFCC66;font-size:.85rem;margin-top:8px}
   .modal .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
-  .login-error{color:var(--err);font-weight:700;margin-top:12px;
-               min-height:1.3em;font-size:.9rem}
+  .login-error{color:var(--err);font-weight:700;margin-top:12px;min-height:1.3em;font-size:.9rem}
   .shake{animation:shake .4s}
-  @keyframes shake{0%,100%{transform:translateX(0)}
-    25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
-
-  .tabs{display:flex;gap:6px;margin-bottom:16px;border-bottom:2px solid #1E4C8A;
-        flex-wrap:wrap}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}
+    75%{transform:translateX(8px)}}
+  .tabs{display:flex;gap:6px;margin-bottom:16px;border-bottom:2px solid #1E4C8A;flex-wrap:wrap}
   .tab{padding:10px 16px;border:none;background:transparent;color:var(--muted);
-       font-weight:700;cursor:pointer;border-radius:8px 8px 0 0;
-       border-bottom:3px solid transparent;margin-bottom:-2px;font-size:.9rem}
+    font-weight:700;cursor:pointer;border-radius:8px 8px 0 0;border-bottom:3px solid transparent;
+    margin-bottom:-2px;font-size:.9rem}
   .tab:hover{color:var(--txt)}
   .tab.active{color:var(--poste-yellow);border-bottom-color:var(--poste-yellow);
-              background:rgba(243,216,41,.08)}
+    background:rgba(243,216,41,.08)}
   .tab-content{display:none}
   .tab-content.active{display:block}
-
-  .upload-box{border:2px dashed #1E5BA8;border-radius:12px;padding:20px;
-              text-align:center;cursor:pointer;transition:.15s;
-              background:rgba(0,20,40,.4)}
+  .upload-box{border:2px dashed #1E5BA8;border-radius:12px;padding:20px;text-align:center;
+    cursor:pointer;transition:.15s;background:rgba(0,20,40,.4)}
   .upload-box:hover,.upload-box.dragover{border-color:var(--poste-yellow);
     background:rgba(243,216,41,.08)}
   .upload-box p{margin:6px 0;color:var(--muted);font-size:.9rem}
   .upload-box strong{color:var(--poste-yellow)}
-
   .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-              gap:12px;margin:16px 0}
-  .stat-card{background:var(--card2);padding:14px;border-radius:12px;
-             border:1px solid #1E5BA8}
-  .stat-card .stat-label{color:var(--muted);font-size:.75rem;
-    text-transform:uppercase;letter-spacing:1px}
-  .stat-card .stat-value{font-size:1.8rem;font-weight:900;color:var(--poste-yellow);
-    margin-top:4px}
+    gap:12px;margin:16px 0}
+  .stat-card{background:var(--card2);padding:14px;border-radius:12px;border:1px solid #1E5BA8}
+  .stat-card .stat-label{color:var(--muted);font-size:.75rem;text-transform:uppercase;
+    letter-spacing:1px}
+  .stat-card .stat-value{font-size:1.8rem;font-weight:900;color:var(--poste-yellow);margin-top:4px}
   .stat-list{list-style:none;padding:0;margin:0}
   .stat-list li{display:flex;justify-content:space-between;padding:6px 0;
     border-bottom:1px solid #1E4C8A;font-size:.9rem}
   .stat-list li .cnt{color:var(--poste-yellow);font-weight:700}
-
   .log-table{width:100%;border-collapse:collapse;font-size:.8rem;margin-top:10px}
   .log-table th{text-align:left;padding:6px 4px;color:var(--poste-yellow);
     border-bottom:2px solid #1E4C8A;font-weight:700;font-size:.75rem;
@@ -151,18 +131,9 @@
   .log-ok{color:var(--ok);font-weight:700}
   .log-ko{color:var(--err);font-weight:700}
   .log-fuzzy{color:#FFCC66;font-size:.75rem}
-
   details summary{cursor:pointer;font-weight:700;color:var(--poste-yellow);padding:4px 0}
-
-  .app-footer{
-    text-align:center;
-    padding:22px 16px 32px;
-    color:var(--muted);
-    font-size:.8rem;
-    line-height:1.6;
-    border-top:1px solid rgba(255,255,255,.06);
-    margin-top:20px;
-  }
+  .app-footer{text-align:center;padding:22px 16px 32px;color:var(--muted);font-size:.8rem;
+    line-height:1.6;border-top:1px solid rgba(255,255,255,.06);margin-top:20px}
   .app-footer strong{color:var(--poste-yellow);font-weight:700}
 </style>
 </head>
@@ -204,7 +175,7 @@
     </div>
     <div class="live" id="live"></div>
     <div class="manual" style="margin-top:16px">
-      <input id="manualInput" placeholder="…oppure scrivi: VIA ROMA 111, GRAVINA DI CATANIA" autocomplete="off">
+      <input id="manualInput" placeholder="…oppure scrivi: ROMA 111, GRAVINA DI CATANIA" autocomplete="off">
       <button class="ghost" id="manualBtn">Cerca</button>
     </div>
   </div>
@@ -225,7 +196,6 @@
 
 <div class="modal-overlay" id="adminModal">
   <div class="modal" id="adminBox">
-
     <div id="loginView">
       <h2>🔒 Accesso amministratore</h2>
       <p style="color:var(--muted);font-size:.9rem;margin:0 0 14px 0;">
@@ -241,7 +211,6 @@
 
     <div id="panelView" style="display:none;">
       <h2>⚙️ Pannello amministratore</h2>
-
       <div class="tabs">
         <button class="tab active" data-tab="db">Database</button>
         <button class="tab" data-tab="stats">Statistiche</button>
@@ -255,77 +224,44 @@
           Lasciare <code>civico_da</code> e <code>civico_a</code> vuoti = via coperta interamente.<br>
           Accetta virgola o punto-e-virgola. Intestazione facoltativa.
         </p>
-
         <div class="upload-box" id="uploadBox">
           <p><strong>📁 Trascina qui il file CSV</strong></p>
           <p>oppure clicca per selezionarlo dal computer</p>
           <input type="file" id="fileInput" accept=".csv,text/csv" style="display:none">
         </div>
-
         <textarea id="csvArea" placeholder="Oppure incolla qui il CSV…"></textarea>
-
         <div class="row">
           <button class="ghost" id="loadCsvBtn">Carica dalla textarea</button>
           <button class="ghost" id="downloadCsvBtn">Scarica CSV attuale</button>
           <button class="ghost" id="reloadServerBtn">🔄 Ricarica da file</button>
           <button class="ghost" id="resetDbBtn">Ripristina esempio</button>
         </div>
-
         <div class="status" id="csvStatus" style="margin-top:12px;"></div>
       </div>
 
       <div class="tab-content" id="tab-stats">
         <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-label">Ricerche totali</div>
-            <div class="stat-value" id="statTotale">0</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Oggi</div>
-            <div class="stat-value" id="statOggi">0</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Match rate</div>
-            <div class="stat-value" id="statMatch">–</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Correzioni fuzzy</div>
-            <div class="stat-value" id="statFuzzy">0</div>
-          </div>
+          <div class="stat-card"><div class="stat-label">Ricerche totali</div><div class="stat-value" id="statTotale">0</div></div>
+          <div class="stat-card"><div class="stat-label">Oggi</div><div class="stat-value" id="statOggi">0</div></div>
+          <div class="stat-card"><div class="stat-label">Match rate</div><div class="stat-value" id="statMatch">–</div></div>
+          <div class="stat-card"><div class="stat-label">Correzioni fuzzy</div><div class="stat-value" id="statFuzzy">0</div></div>
         </div>
-
         <h3>Top 10 vie più cercate</h3>
         <ul class="stat-list" id="statVie"><li><em>Nessun dato.</em></li></ul>
-
         <h3>Top 10 comuni</h3>
         <ul class="stat-list" id="statPaesi"><li><em>Nessun dato.</em></li></ul>
-
         <h3>Top 10 portalettere</h3>
         <ul class="stat-list" id="statPl"><li><em>Nessun dato.</em></li></ul>
-
-        <div class="row">
-          <button class="danger" id="resetStatsBtn">🗑️ Azzera statistiche</button>
-        </div>
+        <div class="row"><button class="danger" id="resetStatsBtn">🗑️ Azzera statistiche</button></div>
       </div>
 
       <div class="tab-content" id="tab-log">
-        <p style="color:var(--muted);font-size:.9rem;">
-          Ultime 50 ricerche (su un massimo di 1000 conservate nel browser).
-        </p>
+        <p style="color:var(--muted);font-size:.9rem;">Ultime 50 ricerche (su un massimo di 1000 conservate nel browser).</p>
         <div style="max-height:400px;overflow-y:auto;">
           <table class="log-table" id="logTable">
-            <thead>
-              <tr>
-                <th>Ora</th>
-                <th>Input</th>
-                <th>Esito</th>
-                <th>Risultato</th>
-                <th>Fonte</th>
-              </tr>
-            </thead>
+            <thead><tr><th>Ora</th><th>Input</th><th>Esito</th><th>Risultato</th><th>Fonte</th></tr></thead>
             <tbody id="logBody">
-              <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px;">
-                Nessuna ricerca registrata.</td></tr>
+              <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px;">Nessuna ricerca registrata.</td></tr>
             </tbody>
           </table>
         </div>
@@ -337,66 +273,38 @@
 
       <div class="tab-content" id="tab-security">
         <h3>Cambia password amministratore</h3>
-        <p style="color:var(--muted);font-size:.9rem;">
-          La password è salvata localmente nel browser (persiste tra sessioni).
-          Minimo 4 caratteri.
-        </p>
-
+        <p style="color:var(--muted);font-size:.9rem;">La password è salvata localmente nel browser (persiste tra sessioni). Minimo 4 caratteri.</p>
         <div style="margin-top:14px;">
-          <label style="display:block;color:var(--muted);font-size:.85rem;margin-bottom:6px;">
-            Password attuale
-          </label>
+          <label style="display:block;color:var(--muted);font-size:.85rem;margin-bottom:6px;">Password attuale</label>
           <input type="password" id="pwdOld" placeholder="••••••">
         </div>
-
         <div style="margin-top:12px;">
-          <label style="display:block;color:var(--muted);font-size:.85rem;margin-bottom:6px;">
-            Nuova password
-          </label>
+          <label style="display:block;color:var(--muted);font-size:.85rem;margin-bottom:6px;">Nuova password</label>
           <input type="password" id="pwdNew" placeholder="••••••">
         </div>
-
         <div style="margin-top:12px;">
-          <label style="display:block;color:var(--muted);font-size:.85rem;margin-bottom:6px;">
-            Conferma nuova password
-          </label>
+          <label style="display:block;color:var(--muted);font-size:.85rem;margin-bottom:6px;">Conferma nuova password</label>
           <input type="password" id="pwdConfirm" placeholder="••••••">
         </div>
-
         <div class="login-error" id="pwdError"></div>
-        <div class="login-success" id="pwdSuccess" style="color:var(--ok);
-             font-weight:700;margin-top:12px;min-height:1.3em;font-size:.9rem;"></div>
-
+        <div class="login-success" id="pwdSuccess" style="color:var(--ok);font-weight:700;margin-top:12px;min-height:1.3em;font-size:.9rem;"></div>
         <div class="row">
-          <button class="mic" id="savePwdBtn" style="min-width:auto;padding:14px 24px;">
-            💾 Salva nuova password
-          </button>
+          <button class="mic" id="savePwdBtn" style="min-width:auto;padding:14px 24px;">💾 Salva nuova password</button>
         </div>
-
         <h3 style="margin-top:32px;">Ripristina password predefinita</h3>
-        <p style="color:var(--muted);font-size:.9rem;">
-          Riporta la password a <code>123456</code>. Utile se hai dimenticato quella nuova.
-        </p>
-        <div class="row">
-          <button class="ghost" id="resetPwdBtn">↺ Ripristina a 123456</button>
-        </div>
+        <p style="color:var(--muted);font-size:.9rem;">Riporta la password a <code>123456</code>. Utile se hai dimenticato quella nuova.</p>
+        <div class="row"><button class="ghost" id="resetPwdBtn">↺ Ripristina a 123456</button></div>
       </div>
 
       <div class="modal-actions" style="margin-top:24px;">
         <button class="ghost" id="logoutBtn">🔒 Blocca</button>
-        <button class="mic" id="closePanelBtn" style="min-width:auto;padding:14px 24px;">
-          Chiudi
-        </button>
+        <button class="mic" id="closePanelBtn" style="min-width:auto;padding:14px 24px;">Chiudi</button>
       </div>
     </div>
-
   </div>
 </div>
 
 <script>
-/* ============================================================
-   CONFIG
-   ============================================================ */
 const ADMIN_PASSWORD_DEFAULT = "123456";
 const ADMIN_SESSION_KEY = "assistente_smistamento_admin";
 const PWD_STORAGE_KEY   = "assistente_pwd_hash";
@@ -405,9 +313,6 @@ const LOG_STORAGE_KEY   = "assistente_log";
 const LOG_MAX_ENTRIES   = 1000;
 const FUZZY_THRESHOLD   = 0.72;
 
-/* ============================================================
-   DB DI ESEMPIO (~100 vie, 10 comuni)
-   ============================================================ */
 const DB_DEFAULT = [
   { via:"Via Roma",da:1,a:199,paese:"Gravina di Catania",cap:"95030",portalettere:"39"},
   { via:"Via Roma",da:200,a:299,paese:"Gravina di Catania",cap:"95030",portalettere:"40"},
@@ -512,90 +417,45 @@ const DB_DEFAULT = [
 ];
 let DB = DB_DEFAULT.map(x => ({...x}));
 
-/* ============================================================
-   NUMERI ITALIANI → CIFRE
-   ============================================================ */
 const _U = ["","uno","due","tre","quattro","cinque","sei","sette","otto","nove",
   "dieci","undici","dodici","tredici","quattordici","quindici","sedici",
   "diciassette","diciotto","diciannove"];
 const _T = ["","","venti","trenta","quaranta","cinquanta","sessanta","settanta","ottanta","novanta"];
-function _below100(n){
-  if (n < 20) return _U[n];
-  const d = Math.floor(n/10), r = n%10;
-  let base = _T[d];
-  if (r === 1 || r === 8) base = base.slice(0,-1);
-  return base + _U[r];
-}
-function _variants(n){
-  if (n === 0) return ["zero"];
-  if (n < 100) return [_below100(n)];
-  const h = Math.floor(n/100), r = n%100;
-  const prefix = (h === 1 ? "cento" : _U[h] + "cento");
-  if (r === 0) return [prefix];
-  const out = [];
-  for (const rv of _variants(r)){
-    out.push(prefix + rv);
-    if (prefix.endsWith("o") && rv.startsWith("o"))
-      out.push(prefix.slice(0,-1) + rv);
-  }
-  return out;
-}
+function _below100(n){ if (n < 20) return _U[n];
+  const d = Math.floor(n/10), r = n%10; let base = _T[d];
+  if (r === 1 || r === 8) base = base.slice(0,-1); return base + _U[r]; }
+function _variants(n){ if (n === 0) return ["zero"]; if (n < 100) return [_below100(n)];
+  const h = Math.floor(n/100), r = n%100; const prefix = (h === 1 ? "cento" : _U[h] + "cento");
+  if (r === 0) return [prefix]; const out = [];
+  for (const rv of _variants(r)){ out.push(prefix + rv);
+    if (prefix.endsWith("o") && rv.startsWith("o")) out.push(prefix.slice(0,-1) + rv); }
+  return out; }
 const NUM_MAP = {};
-for (let n = 0; n <= 999; n++){
-  for (const w of _variants(n)){
-    NUM_MAP[w] = String(n);
-    if (w.endsWith("tre") && w !== "tre") NUM_MAP[w.slice(0,-3)+"tré"] = String(n);
-  }
-}
-function replaceNumbers(text){
-  return text.split(" ").map(t => NUM_MAP[t] || t).join(" ");
-}
-function numberToItWords(n){
-  n = parseInt(n, 10);
+for (let n = 0; n <= 999; n++){ for (const w of _variants(n)){
+  NUM_MAP[w] = String(n); if (w.endsWith("tre") && w !== "tre") NUM_MAP[w.slice(0,-3)+"tré"] = String(n); } }
+function replaceNumbers(text){ return text.split(" ").map(t => NUM_MAP[t] || t).join(" "); }
+function numberToItWords(n){ n = parseInt(n, 10);
   if (isNaN(n) || n < 0 || n > 999) return String(n);
   let word = _variants(n)[0];
-  if (word.endsWith("tre") && word !== "tre"){
-    word = word.slice(0, -3) + "tré";
-  }
-  return word;
-}
+  if (word.endsWith("tre") && word !== "tre") word = word.slice(0, -3) + "tré";
+  return word; }
 
-/* ============================================================
-   DUG (Denominazione Urbanistica Generica) - ampliato
-   ============================================================ */
 const DUG_WORDS = new Set([
-  "via","viale","vle","vial","viali",
-  "piazza","piazzale","piazzetta","piazzett","piaz","piazz",
-  "vicolo","vic","vico","vicò","vialetto","vialetti",
-  "corso","cso","corsi",
-  "largo","lgo","larghi",
-  "strada","str","strade","stradella","stradone","stradoni",
-  "contrada","contra","contrà","contrade",
-  "lungargine","lungadige","lungarno","lungomare","lungolago","lungopo",
-  "riviera","circonvallazione","tangenziale","svincolo","rotonda","androna",
-  "calle","calletta","callesella","fondamenta","ramo","sotoportego","sotoport",
-  "salizada","liston","ruga","galleria","gall","passaggio","pass","traversa","trav",
-  "frazione","fraz","loc","localita","località","sottopasso","cavalcavia",
-  "passeggiata","belvedere",
-  "ta"
+  "via","viale","vle","vial","viali","piazza","piazzale","piazzetta","piazzett","piaz","piazz",
+  "vicolo","vic","vico","vicò","vialetto","vialetti","corso","cso","corsi","largo","lgo","larghi",
+  "strada","str","strade","stradella","stradone","stradoni","contrada","contra","contrà","contrade",
+  "lungargine","lungadige","lungarno","lungomare","lungolago","lungopo","riviera","circonvallazione",
+  "tangenziale","svincolo","rotonda","androna","calle","calletta","callesella","fondamenta","ramo",
+  "sotoportego","sotoport","salizada","liston","ruga","galleria","gall","passaggio","pass","traversa",
+  "trav","frazione","fraz","loc","localita","località","sottopasso","cavalcavia","passeggiata",
+  "belvedere","ta"
 ]);
-
-/* ============================================================
-   Stopwords italiane
-   ============================================================ */
 const STOPWORDS = new Set([
-  "di","del","della","dei","degli","delle",
-  "da","dal","dalla","dai","dagli","dalle",
-  "in","a","al","alla","ai","agli","alle","e","ed",
-  "la","il","lo","le","gli","l","d",
-  "su","sul","sullo","sulla","sui","sugli","sulle",
-  "per","con","tra","fra","nel","nello","nella","nei","negli","nelle",
-  "un","uno","una"
+  "di","del","della","dei","degli","delle","da","dal","dalla","dai","dagli","dalle",
+  "in","a","al","alla","ai","agli","alle","e","ed","la","il","lo","le","gli","l","d",
+  "su","sul","sullo","sulla","sui","sugli","sulle","per","con","tra","fra","nel","nello",
+  "nella","nei","negli","nelle","un","uno","una"
 ]);
-
-/* ============================================================
-   Sinonimi geografici
-   ============================================================ */
 const SYNONYM_GROUPS = [
   ["s","san","santo","santa","santi","sant","santissimo","santissima"],
   ["d","di","de","del","della","dello","dei","degli","delle"],
@@ -610,10 +470,6 @@ const SYNONYM_GROUPS = [
   ["vi","viminario"],
   ["rio","viminario"]
 ];
-
-/* ============================================================
-   Espansioni automatiche di nomi di paese abbreviati
-   ============================================================ */
 const COUNTRY_EXPANSIONS = {
   "CAMPO S.MARTINO":  "Campo San Martino",
   "CARMIGNANO B.":    "Carmignano di Brenta",
@@ -628,19 +484,21 @@ const COUNTRY_EXPANSIONS = {
   "PIACENZA D'A.":    "Piacenza d'Adige",
   "BORGO V.":         "Borgo Veneto",
   "VILLANOVA M.":     "Villanova Marchesana",
-  "LOZZO ATES.":      "Lozzo Atestino"
+  "LOZZO ATES.":      "Lozzo Atestino",
+  "PONTE S.NICOLO'":  "Ponte San Nicolo",
+  "PONTE S. NICOLO'": "Ponte San Nicolo",
+  "NOVENTA PAD.":     "Noventa Padovana",
+  "MEGLIADINO S. V.": "Megliadino San Vitale",
+  "S. PIETRO IN GU":  "San Pietro in Gu",
+  "SANT'ELENA":       "Sant Elena"
 };
 
-/* ============================================================
-   Normalizzazione, preprocess abbreviazioni, tokenizzazione
-   ============================================================ */
 function normalize(s){
   return (s || "").toLowerCase()
     .replace(/[''`]/g, " ")
     .replace(/[.,;:!?'"()\[\]\/]/g, " ")
     .replace(/\s+/g, " ").trim();
 }
-
 function preprocessAbbreviations(s){
   return String(s)
     .replace(/\bv\.?\s*le\b/gi, "viale")
@@ -659,7 +517,6 @@ function preprocessAbbreviations(s){
     .replace(/\btrav\.?\b/gi, "traversa")
     .replace(/\bpass\.?\b/gi, "passaggio");
 }
-
 function tokenizeNoStop(s){
   const pre = preprocessAbbreviations(s);
   return normalize(pre).split(" ").filter(t => {
@@ -669,26 +526,19 @@ function tokenizeNoStop(s){
     return SYNONYM_GROUPS.some(g => g.indexOf(t) !== -1);
   });
 }
-
 function countryToTokens(name){
   const expanded = COUNTRY_EXPANSIONS[String(name).toUpperCase()] || name;
   return tokenizeNoStop(expanded);
 }
 
-/* ============================================================
-   LEVENSHTEIN + sinonimi
-   ============================================================ */
 function levenshtein(a, b, maxDist){
   if (Math.abs(a.length - b.length) > maxDist) return maxDist + 1;
   const m = a.length, n = b.length;
-  if (m === 0) return n;
-  if (n === 0) return m;
-  let prev = new Array(n + 1);
-  let curr = new Array(n + 1);
+  if (m === 0) return n; if (n === 0) return m;
+  let prev = new Array(n + 1); let curr = new Array(n + 1);
   for (let j = 0; j <= n; j++) prev[j] = j;
   for (let i = 1; i <= m; i++){
-    curr[0] = i;
-    let minRow = curr[0];
+    curr[0] = i; let minRow = curr[0];
     for (let j = 1; j <= n; j++){
       const cost = a[i-1] === b[j-1] ? 0 : 1;
       curr[j] = Math.min(prev[j]+1, curr[j-1]+1, prev[j-1]+cost);
@@ -699,7 +549,6 @@ function levenshtein(a, b, maxDist){
   }
   return prev[n];
 }
-
 function tokensMatch(a, b){
   if (a === b) return true;
   for (const group of SYNONYM_GROUPS){
@@ -707,15 +556,11 @@ function tokensMatch(a, b){
   }
   return false;
 }
-
 function tokenDistance(a, b, maxD){
   if (tokensMatch(a, b)) return 0;
   return levenshtein(a, b, maxD);
 }
 
-/* ============================================================
-   Cache tokenizzate
-   ============================================================ */
 let vieUnicheCache = [];
 let paesiUniciCache = [];
 let vieTokenizzate = [];
@@ -724,10 +569,7 @@ let paesiTokenizzati = [];
 function rebuildCaches(){
   const vieSet = new Set();
   const paesiSet = new Set();
-  for (const e of DB){
-    vieSet.add(e.via);
-    paesiSet.add(e.paese);
-  }
+  for (const e of DB){ vieSet.add(e.via); paesiSet.add(e.paese); }
   vieUnicheCache = [...vieSet];
   paesiUniciCache = [...paesiSet];
   vieTokenizzate = vieUnicheCache
@@ -738,24 +580,15 @@ function rebuildCaches(){
     .filter(x => x.tokens.length > 0);
 }
 
-/* ============================================================
-   Fuzzy matching
-   ============================================================ */
 function bestAlignment(textTokens, candTokens){
-  const n = candTokens.length;
-  const m = textTokens.length;
+  const n = candTokens.length, m = textTokens.length;
   if (n === 0 || m === 0) return 0;
-
   let bestSim = 0;
-  const minOffset = -n + 1;
-  const maxOffset = m - 1;
-
-  for (let offset = minOffset; offset <= maxOffset; offset++){
+  for (let offset = -n + 1; offset <= m - 1; offset++){
     let totalDist = 0, totalLen = 0, covered = 0, considered = 0;
     for (let j = 0; j < n; j++){
       const tIdx = j + offset;
-      if (tIdx < 0) continue;
-      if (tIdx >= m) continue;
+      if (tIdx < 0 || tIdx >= m) continue;
       considered++;
       const t = textTokens[tIdx], c = candTokens[j];
       const maxLen = Math.max(t.length, c.length);
@@ -767,8 +600,7 @@ function bestAlignment(textTokens, candTokens){
     }
     if (considered === 0) continue;
     const sim = totalLen > 0 ? 1 - totalDist / totalLen : 0;
-    const inputCovered = covered / m;
-    const adjusted = sim * (0.5 + 0.5 * inputCovered);
+    const adjusted = sim * (0.5 + 0.5 * (covered / m));
     if (adjusted > bestSim) bestSim = adjusted;
   }
   return bestSim;
@@ -779,9 +611,7 @@ function findTopMatches(textTokens, candidates, topN){
   for (const cand of candidates){
     if (!cand.tokens || !cand.tokens.length) continue;
     const sim = bestAlignment(textTokens, cand.tokens);
-    if (sim >= FUZZY_THRESHOLD){
-      scored.push({ match: cand.orig, sim });
-    }
+    if (sim >= FUZZY_THRESHOLD) scored.push({ match: cand.orig, sim });
   }
   scored.sort((a, b) => b.sim - a.sim);
   return scored.slice(0, topN);
@@ -808,23 +638,29 @@ function fuzzyCorrect(raw){
       const corrected = [via.match, civico, paese.match].filter(Boolean).join(" ");
       const r = lookup(corrected);
       if (r.ok){
-        return {
-          text: corrected,
-          result: r,
-          via: via.match,
-          paese: paese.match,
-          civico: civico ? parseInt(civico, 10) : null,
-          sim: (via.sim + paese.sim) / 2
-        };
+        return { text: corrected, result: r, via: via.match, paese: paese.match,
+                 civico: civico ? parseInt(civico, 10) : null,
+                 sim: (via.sim + paese.sim) / 2 };
       }
     }
   }
   return null;
 }
 
-/* ============================================================
-   LOOKUP ESATTO
-   ============================================================ */
+/* Controlla se `word` appare in `text` con confini di parola (spazi o inizio/fine) */
+function containsWord(text, word){
+  if (!word) return false;
+  let idx = text.indexOf(word);
+  while (idx !== -1){
+    const before = idx === 0 ? " " : text[idx - 1];
+    const afterIdx = idx + word.length;
+    const after = afterIdx >= text.length ? " " : text[afterIdx];
+    if (/\s/.test(before) && /\s/.test(after)) return true;
+    idx = text.indexOf(word, idx + 1);
+  }
+  return false;
+}
+
 function lookup(raw){
   if (!raw || !raw.trim()) return { ok:false, message:"Nessun testo." };
   let t = normalize(preprocessAbbreviations(raw));
@@ -835,7 +671,7 @@ function lookup(raw){
     const via = normalize(e.via), paese = normalize(e.paese);
     const key = via + "||" + paese;
     if (seen.has(key)) continue;
-    if (t.includes(via) && t.includes(paese)){
+    if (containsWord(t, via) && t.includes(paese)){
       seen.add(key);
       pairs.push({ via, paese, score: via.length + paese.length });
     }
@@ -900,30 +736,18 @@ function lookupSmart(raw){
   if (exact.ok) return exact;
   const fz = fuzzyCorrect(raw);
   if (fz && fz.result && fz.result.ok){
-    return { ...fz.result, fuzzy:true, original:raw,
-             corrected: fz.text, fuzzySim: fz.sim };
+    return { ...fz.result, fuzzy:true, original:raw, corrected: fz.text, fuzzySim: fz.sim };
   }
   return exact;
 }
 
-/* ============================================================
-   TTS + BEEP
-   ============================================================ */
 let voices = [];
-function loadVoices(){
-  if (!("speechSynthesis" in window)) return;
-  voices = window.speechSynthesis.getVoices();
-}
-if ("speechSynthesis" in window){
-  loadVoices();
-  window.speechSynthesis.onvoiceschanged = loadVoices;
-}
+function loadVoices(){ if (!("speechSynthesis" in window)) return; voices = window.speechSynthesis.getVoices(); }
+if ("speechSynthesis" in window){ loadVoices(); window.speechSynthesis.onvoiceschanged = loadVoices; }
 function pickItalianVoice(){
   return voices.find(v => v.lang === 'it-IT')
-      || voices.find(v => v.lang && v.lang.toLowerCase().startsWith('it'))
-      || null;
+      || voices.find(v => v.lang && v.lang.toLowerCase().startsWith('it')) || null;
 }
-
 function codeToSpeech(code){
   const s = String(code).trim();
   const m = s.match(/^(\d+)(?:-([A-Za-z]+))?$/);
@@ -932,11 +756,7 @@ function codeToSpeech(code){
   const suffix = m[2] ? " " + m[2].toUpperCase() : "";
   return numWord + suffix;
 }
-
-function prepareSpeechText(portalettereArr){
-  return portalettereArr.map(codeToSpeech).join(" e ");
-}
-
+function prepareSpeechText(arr){ return arr.map(codeToSpeech).join(" e "); }
 function speak(text, cb){
   if (!text){ cb && cb(); return; }
   if (!("speechSynthesis" in window)){ cb && cb(); return; }
@@ -944,8 +764,7 @@ function speak(text, cb){
   const doSpeak = () => {
     const u = new SpeechSynthesisUtterance(text);
     const itVoice = pickItalianVoice();
-    if (itVoice){ u.voice = itVoice; u.lang = itVoice.lang; }
-    else { u.lang = "it-IT"; }
+    if (itVoice){ u.voice = itVoice; u.lang = itVoice.lang; } else { u.lang = "it-IT"; }
     u.rate = 0.95; u.pitch = 1; u.volume = 1;
     let done = false;
     const finish = () => { if (done) return; done = true; cb && cb(); };
@@ -953,10 +772,7 @@ function speak(text, cb){
     setTimeout(finish, 12000);
     try { window.speechSynthesis.speak(u); } catch(e){ finish(); }
   };
-  if (voices.length === 0){
-    loadVoices();
-    if (voices.length === 0) { setTimeout(doSpeak, 400); return; }
-  }
+  if (voices.length === 0){ loadVoices(); if (voices.length === 0) { setTimeout(doSpeak, 400); return; } }
   doSpeak();
 }
 
@@ -975,747 +791,44 @@ function beep(freq = 800, dur = 80, vol = 0.12){
 function beepStart(){ beep(800,70); setTimeout(()=>beep(1100,90), 90); }
 function beepStop(){ beep(500,140,0.1); }
 
-/* ============================================================
-   STORAGE
-   ============================================================ */
-function hashPwd(s){
-  let h = 5381;
+function hashPwd(s){ let h = 5381;
   for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
-  return "h" + Math.abs(h).toString(36);
-}
-function getStoredPwdHash(){
-  try {
-    const v = localStorage.getItem(PWD_STORAGE_KEY);
-    if (v) return v;
-  } catch(_){}
-  return hashPwd(ADMIN_PASSWORD_DEFAULT);
-}
-function setStoredPwdHash(hash){
-  try { localStorage.setItem(PWD_STORAGE_KEY, hash); return true; }
-  catch(_){ return false; }
-}
-function verifyPassword(pwd){
-  return hashPwd(pwd) === getStoredPwdHash();
-}
+  return "h" + Math.abs(h).toString(36); }
+function getStoredPwdHash(){ try { const v = localStorage.getItem(PWD_STORAGE_KEY); if (v) return v; } catch(_){}
+  return hashPwd(ADMIN_PASSWORD_DEFAULT); }
+function setStoredPwdHash(hash){ try { localStorage.setItem(PWD_STORAGE_KEY, hash); return true; } catch(_){ return false; } }
+function verifyPassword(pwd){ return hashPwd(pwd) === getStoredPwdHash(); }
 
-function getStats(){
-  try {
-    const raw = localStorage.getItem(STATS_STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch(_){}
-  return { totale:0, match:0, ko:0, fuzzy:0, oggi:0, dataOggi:todayKey(),
-           perVia:{}, perPaese:{}, perPl:{} };
-}
-function saveStats(s){
-  try { localStorage.setItem(STATS_STORAGE_KEY, JSON.stringify(s)); } catch(_){}
-}
-function todayKey(){
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-function bumpCounter(obj, key){
-  if (!key) return;
-  obj[key] = (obj[key] || 0) + 1;
-}
+function getStats(){ try { const raw = localStorage.getItem(STATS_STORAGE_KEY); if (raw) return JSON.parse(raw); } catch(_){}
+  return { totale:0, match:0, ko:0, fuzzy:0, oggi:0, dataOggi:todayKey(), perVia:{}, perPaese:{}, perPl:{} }; }
+function saveStats(s){ try { localStorage.setItem(STATS_STORAGE_KEY, JSON.stringify(s)); } catch(_){} }
+function todayKey(){ const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function bumpCounter(obj, key){ if (!key) return; obj[key] = (obj[key] || 0) + 1; }
 function recordStats(res, fuzzy){
   const s = getStats();
   if (s.dataOggi !== todayKey()){ s.dataOggi = todayKey(); s.oggi = 0; }
-  s.totale++;
-  s.oggi++;
+  s.totale++; s.oggi++;
   if (res.ok){
-    s.match++;
-    if (fuzzy) s.fuzzy++;
-    if (res.via && res.paese){
-      bumpCounter(s.perVia, `${res.via} (${res.paese})`);
-      bumpCounter(s.perPaese, res.paese);
-    }
-    if (res.portalettere && res.portalettere.length){
-      res.portalettere.forEach(pl => bumpCounter(s.perPl, pl));
-    }
-  } else {
-    s.ko++;
-  }
+    s.match++; if (fuzzy) s.fuzzy++;
+    if (res.via && res.paese){ bumpCounter(s.perVia, `${res.via} (${res.paese})`); bumpCounter(s.perPaese, res.paese); }
+    if (res.portalettere && res.portalettere.length){ res.portalettere.forEach(pl => bumpCounter(s.perPl, pl)); }
+  } else { s.ko++; }
   saveStats(s);
 }
-
-function getLog(){
-  try {
-    const raw = localStorage.getItem(LOG_STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch(_){}
-  return [];
-}
-function saveLog(log){
-  try { localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(log.slice(0, LOG_MAX_ENTRIES))); }
-  catch(_){}
-}
+function getLog(){ try { const raw = localStorage.getItem(LOG_STORAGE_KEY); if (raw) return JSON.parse(raw); } catch(_){} return []; }
+function saveLog(log){ try { localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(log.slice(0, LOG_MAX_ENTRIES))); } catch(_){} }
 let lastLoggedKey = { text:"", ts:0 };
 function recordLog(raw, res, source, fuzzy){
   const key = (raw || "").trim().toLowerCase();
   const now = Date.now();
-  if (key === lastLoggedKey.text && (now - lastLoggedKey.ts) < 5000 && source === 'voice'){
-    return;
-  }
+  if (key === lastLoggedKey.text && (now - lastLoggedKey.ts) < 5000 && source === 'voice') return;
   lastLoggedKey = { text:key, ts:now };
-
   const log = getLog();
-  log.unshift({
-    ts: now,
-    input: raw || "",
-    esito: res.ok ? "ok" : "ko",
-    risultato: res.ok ? (res.portalettere || []).join("·") : "",
-    fonte: source || "",
-    fuzzy: !!fuzzy
-  });
+  log.unshift({ ts: now, input: raw || "", esito: res.ok ? "ok" : "ko",
+    risultato: res.ok ? (res.portalettere || []).join("·") : "", fonte: source || "", fuzzy: !!fuzzy });
   saveLog(log);
 }
 
-/* ============================================================
-   UI refs
-   ============================================================ */
 const $ = id => document.getElementById(id);
-const bigNum = $("bigNum"), addrEl = $("addr"), noteEl = $("note"),
-      fuzzyNoteEl = $("fuzzyNote"),
-      liveEl = $("live"), statusTextEl = $("statusText"), dotEl = $("dot"),
-      micBtn = $("micBtn"), historyEl = $("history"), headerState = $("headerState");
-
-let history = [];
-
-function setDot(state){ dotEl.className = "dot" + (state ? " " + state : ""); }
-function setStatusText(txt){ statusTextEl.textContent = txt; }
-function setHeader(txt){ headerState.textContent = txt; }
-function setLive(text){ liveEl.innerHTML = text ? `<b>🎤</b> ${escapeHtml(text)}` : ""; }
-function escapeHtml(s){
-  return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-
-function renderResult(res, raw){
-  if (res.ok){
-    bigNum.textContent = (res.portalettere || []).join(" · ");
-    addrEl.textContent = res.message;
-    noteEl.textContent = `Comando: "${raw}"`;
-    if (res.fuzzy){
-      fuzzyNoteEl.style.display = "block";
-      fuzzyNoteEl.textContent =
-        `🔄 Interpretato come: "${res.corrected}" (similarità ${Math.round((res.fuzzySim||0)*100)}%)`;
-    } else {
-      fuzzyNoteEl.style.display = "none";
-      fuzzyNoteEl.textContent = "";
-    }
-  } else {
-    bigNum.textContent = "?";
-    addrEl.textContent = "Nessuna corrispondenza";
-    noteEl.textContent = res.message + (res.transcript ? ` — ho sentito: "${res.transcript}"` : "");
-    fuzzyNoteEl.style.display = "none";
-  }
-  const shown = (res.portalettere || []).join(" · ") || "?";
-  const suffix = res.fuzzy ? " 🔄" : "";
-  history.unshift({ raw, shown, suffix });
-  history = history.slice(0, 5);
-  historyEl.innerHTML = history.map(h =>
-    `<li><b>${escapeHtml(h.shown)}${h.suffix}</b> — ${escapeHtml(h.raw)}</li>`).join("")
-    || "<li>Nessuna richiesta.</li>";
-}
-
-/* ============================================================
-   STATO RICONOSCIMENTO
-   ============================================================ */
-let recognition = null;
-let wantListening = false;
-let speaking = false;
-let processing = false;
-
-function initRecognition(){
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) return null;
-  const r = new SR();
-  r.lang = "it-IT";
-  r.continuous = true;
-  r.interimResults = true;
-  r.maxAlternatives = 1;
-
-  r.onresult = (ev) => {
-    let interim = "", finalText = "";
-    for (let i = ev.resultIndex; i < ev.results.length; i++){
-      const res = ev.results[i];
-      if (res.isFinal) finalText += res[0].transcript + " ";
-      else interim += res[0].transcript;
-    }
-    if (!processing && !speaking && interim) setLive(interim);
-    if (!processing && !speaking && finalText.trim()){
-      setLive(finalText.trim());
-      try { handle(finalText.trim(), 'voice'); }
-      catch(e){ console.error(e); processing = false; speaking = false; }
-    }
-  };
-
-  r.onstart = () => {
-    if (wantListening){
-      setDot('listening');
-      setStatusText('🔴 In ascolto continuo');
-      setHeader('in ascolto');
-    }
-  };
-
-  r.onerror = (e) => {
-    console.warn("Speech error:", e.error);
-    if (e.error === "not-allowed" || e.error === "service-not-allowed"){
-      wantListening = false;
-      setDot('error');
-      setStatusText('⚠️ Permesso microfono negato');
-      setHeader('errore');
-      updateMicBtn();
-    }
-  };
-
-  r.onend = () => {
-    if (wantListening && !speaking){
-      setTimeout(startRecognition, 150);
-    }
-  };
-  return r;
-}
-
-function startRecognition(){
-  if (!recognition || !wantListening || speaking) return;
-  try { recognition.start(); }
-  catch(e){
-    if (e.name === 'InvalidStateError') return;
-    setTimeout(startRecognition, 500);
-  }
-}
-
-function updateMicBtn(){
-  if (wantListening){
-    micBtn.classList.add("on");
-    micBtn.textContent = "⏹️ Ferma microfono";
-  } else {
-    micBtn.classList.remove("on");
-    micBtn.textContent = "🎙️ Attiva microfono";
-    setDot('');
-    setStatusText('Microfono spento');
-    setHeader('inattivo');
-  }
-}
-
-function handle(text, source){
-  if (processing || speaking) return;
-  processing = true;
-
-  const res = lookupSmart(text);
-
-  if (!res.ok && source === 'voice'){
-    processing = false;
-    setLive("");
-    return;
-  }
-
-  renderResult(res, text);
-  setLive("");
-  recordStats(res, !!res.fuzzy);
-  recordLog(text, res, source, !!res.fuzzy);
-
-  if (!res.ok){ processing = false; return; }
-
-  speaking = true;
-  setDot('speaking');
-  setStatusText('🔊 Sto rispondendo…');
-  setHeader('risposta');
-
-  try { recognition && recognition.stop(); } catch(_){}
-
-  const speechText = prepareSpeechText(res.portalettere);
-  speak(speechText, () => {
-    speaking = false;
-    processing = false;
-    if (wantListening){
-      setTimeout(startRecognition, 450);
-    } else {
-      setDot(''); setStatusText('Microfono spento'); setHeader('inattivo');
-    }
-  });
-}
-
-function toggleMic(){
-  if (!recognition){
-    setDot('error');
-    setStatusText("⚠️ Riconoscimento vocale non supportato. Usa Chrome/Edge.");
-    return;
-  }
-  if (wantListening){
-    wantListening = false;
-    try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch(_){}
-    try { recognition.stop(); } catch(_){}
-    beepStop();
-    updateMicBtn();
-  } else {
-    wantListening = true;
-    micBtn.classList.add("on");
-    micBtn.textContent = "⏹️ Ferma microfono";
-    setDot('listening');
-    setStatusText('Attivazione…');
-    setHeader('attivazione');
-    beepStart();
-    startRecognition();
-  }
-}
-
-/* ============================================================
-   CSV
-   ============================================================ */
-function detectSeparator(text){
-  const first = text.split(/\r?\n/)[0] || '';
-  return (first.split(';').length > first.split(',').length) ? ';' : ',';
-}
-function parseCSV(text){
-  if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
-  const sep = detectSeparator(text);
-  const rows = [];
-  let row = [], cur = '', inQ = false;
-  for (let i = 0; i < text.length; i++){
-    const c = text[i];
-    if (inQ){
-      if (c === '"'){
-        if (text[i+1] === '"') { cur += '"'; i++; }
-        else inQ = false;
-      } else cur += c;
-    } else {
-      if (c === '"') inQ = true;
-      else if (c === sep) { row.push(cur); cur = ''; }
-      else if (c === '\n' || c === '\r'){
-        if (c === '\r' && text[i+1] === '\n') i++;
-        row.push(cur); cur = '';
-        if (row.some(x => x.trim() !== '')) rows.push(row);
-        row = [];
-      } else cur += c;
-    }
-  }
-  if (cur !== '' || row.length){
-    row.push(cur);
-    if (row.some(x => x.trim() !== '')) rows.push(row);
-  }
-  return rows;
-}
-function normalizeHeader(h){
-  const k = (h || '').trim().toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .replace(/\s+/g, '_');
-  const map = {
-    via:['via','indirizzo','street','strada'],
-    da:['civico_da','da','civico_inizio','inizio','start','min','civico_min'],
-    a:['civico_a','a','civico_fine','fine','end','max','civico_max'],
-    civico:['civico','numero','num','civ','n'],
-    paese:['paese','comune','city','citta','localita','town'],
-    cap:['cap','zip','postal_code','codice_postale','codicepostale'],
-    portalettere:['portalettere','postino','pl','zona','posta','team','routing','assegnazione','codice']
-  };
-  for (const key in map) if (map[key].includes(k)) return key;
-  return null;
-}
-function rowsToEntries(rows){
-  if (!rows.length) return [];
-  const first = rows[0].map(c => (c || '').trim().toLowerCase());
-  const headerWords = ['via','indirizzo','civico','paese','comune','cap','portalettere','postino','zona'];
-  const hasHeader = first.some(c => headerWords.some(w => c.includes(w)));
-
-  let idx = null, dataRows = rows;
-  if (hasHeader){
-    idx = {};
-    rows[0].forEach((h, i) => {
-      const k = normalizeHeader(h);
-      if (k && idx[k] == null) idx[k] = i;
-    });
-    dataRows = rows.slice(1);
-  } else {
-    idx = { via:0, da:1, a:2, paese:3, cap:4, portalettere:5 };
-  }
-  if (idx.via == null || idx.paese == null) return [];
-
-  const out = [], seen = new Set();
-  for (const r of dataRows){
-    const get = k => idx[k] != null ? (r[idx[k]] || '').trim() : '';
-    const via = get('via'), paese = get('paese'), portalettere = get('portalettere');
-    if (!via || !paese || !portalettere) continue;
-
-    let da = null, a = null;
-    if (idx.civico != null){
-      const raw = get('civico').replace(/[^\d]/g, '');
-      if (raw !== ''){
-        const n = parseInt(raw, 10);
-        if (!isNaN(n)) { da = a = n; }
-      }
-    } else {
-      const rawDa = get('da').replace(/[^\d]/g, '');
-      const rawA  = get('a').replace(/[^\d]/g, '');
-      const nDa = rawDa !== '' ? parseInt(rawDa, 10) : null;
-      const nA  = rawA  !== '' ? parseInt(rawA, 10)  : null;
-      if (nDa === 0 && nA === 0) { /* placeholder */ }
-      else if (nDa != null && nA != null){
-        da = Math.min(nDa, nA); a = Math.max(nDa, nA);
-      } else if (nDa != null){ da = a = nDa; }
-      else if (nA  != null){ da = a = nA; }
-    }
-    const key = `${via.toLowerCase()}|${da}|${a}|${paese.toLowerCase()}|${portalettere}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
-    out.push({ via, da, a, paese, cap: get('cap'), portalettere });
-  }
-  return out;
-}
-function toCSV(rows){
-  const esc = v => {
-    const s = String(v == null ? '' : v);
-    return /[",;\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-  };
-  const head = 'via,civico_da,civico_a,paese,cap,portalettere';
-  const body = rows.map(r => [
-    r.via, r.da == null ? '' : r.da, r.a == null ? '' : r.a,
-    r.paese, r.cap, r.portalettere
-  ].map(esc).join(','));
-  return [head, ...body].join('\r\n');
-}
-function download(filename, content){
-  const blob = new Blob([content], {type:'text/csv;charset=utf-8;'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = filename; a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-async function loadCsvFromServer(url){
-  const t0 = performance.now();
-  try {
-    const res = await fetch(url, { cache: 'no-cache' });
-    if (!res.ok) return { ok:false, message:`File ${url} non trovato (HTTP ${res.status})` };
-    const text = await res.text();
-    const entries = rowsToEntries(parseCSV(text));
-    if (!entries.length) return { ok:false, message:'File letto ma nessuna riga valida.' };
-    DB = entries;
-    rebuildCaches();
-    return { ok:true, count: entries.length, ms: Math.round(performance.now() - t0) };
-  } catch (e) {
-    return { ok:false, message: e.message };
-  }
-}
-function loadCsvFromText(text){
-  const entries = rowsToEntries(parseCSV(text));
-  if (!entries.length) return { ok:false, message:'Nessuna riga valida.' };
-  DB = entries;
-  rebuildCaches();
-  return { ok:true, count: entries.length };
-}
-
-/* ============================================================
-   ADMIN
-   ============================================================ */
-function isAdminUnlocked(){
-  return sessionStorage.getItem(ADMIN_SESSION_KEY) === "1";
-}
-function lockAdmin(){
-  sessionStorage.removeItem(ADMIN_SESSION_KEY);
-  $("loginView").style.display = "block";
-  $("panelView").style.display = "none";
-  $("adminPass").value = "";
-  $("loginError").textContent = "";
-  $("pwdError").textContent = "";
-  $("pwdSuccess").textContent = "";
-  $("pwdOld").value = ""; $("pwdNew").value = ""; $("pwdConfirm").value = "";
-}
-function unlockAdmin(){
-  sessionStorage.setItem(ADMIN_SESSION_KEY, "1");
-  $("loginView").style.display = "none";
-  $("panelView").style.display = "block";
-  refreshCsvPanel();
-  refreshStats();
-  refreshLog();
-}
-function refreshCsvPanel(){
-  if (DB.length <= 500){
-    $("csvArea").value = toCSV(DB);
-    $("csvArea").placeholder = "";
-  } else {
-    $("csvArea").value = "";
-    $("csvArea").placeholder =
-      `DB caricato con ${DB.length} righe (troppe per essere mostrate qui).\n` +
-      `Usa "Scarica CSV attuale" per vederlo, trascina un file sopra, oppure incolla un nuovo CSV.`;
-  }
-}
-function refreshStats(){
-  const s = getStats();
-  if (s.dataOggi !== todayKey()){ s.oggi = 0; s.dataOggi = todayKey(); saveStats(s); }
-  $("statTotale").textContent = s.totale || 0;
-  $("statOggi").textContent = s.oggi || 0;
-  const rate = s.totale ? Math.round((s.match / s.totale) * 100) + "%" : "–";
-  $("statMatch").textContent = rate;
-  $("statFuzzy").textContent = s.fuzzy || 0;
-
-  const renderTop = (obj, target) => {
-    const entries = Object.entries(obj || {}).sort((a,b) => b[1]-a[1]).slice(0,10);
-    if (!entries.length){ target.innerHTML = "<li><em>Nessun dato.</em></li>"; return; }
-    target.innerHTML = entries.map(([k,v]) =>
-      `<li><span>${escapeHtml(k)}</span><span class="cnt">${v}</span></li>`).join("");
-  };
-  renderTop(s.perVia, $("statVie"));
-  renderTop(s.perPaese, $("statPaesi"));
-  renderTop(s.perPl, $("statPl"));
-}
-function refreshLog(){
-  const log = getLog().slice(0, 50);
-  const tbody = $("logBody");
-  if (!log.length){
-    tbody.innerHTML = `<tr><td colspan="5"
-      style="text-align:center;color:var(--muted);padding:20px;">
-      Nessuna ricerca registrata.</td></tr>`;
-    return;
-  }
-  tbody.innerHTML = log.map(e => {
-    const d = new Date(e.ts);
-    const ora = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
-    const esitoClass = e.esito === 'ok' ? 'log-ok' : 'log-ko';
-    const esitoTxt = e.esito === 'ok' ? '✓' : '✗';
-    const fuzzyTag = e.fuzzy ? ' <span class="log-fuzzy">🔄</span>' : '';
-    return `<tr>
-      <td>${ora}</td>
-      <td>${escapeHtml(e.input)}${fuzzyTag}</td>
-      <td class="${esitoClass}">${esitoTxt}</td>
-      <td>${escapeHtml(e.risultato || '–')}</td>
-      <td>${escapeHtml(e.fonte || '–')}</td>
-    </tr>`;
-  }).join("");
-}
-
-function openAdminModal(){
-  if (wantListening){
-    wantListening = false;
-    try { recognition && recognition.stop(); } catch(_){}
-    updateMicBtn();
-  }
-  $("adminModal").classList.add("open");
-  if (isAdminUnlocked()){
-    unlockAdmin();
-  } else {
-    lockAdmin();
-    setTimeout(() => $("adminPass").focus(), 100);
-  }
-}
-function closeAdminModal(){
-  $("adminModal").classList.remove("open");
-}
-function tryAdminLogin(){
-  const pwd = $("adminPass").value;
-  if (verifyPassword(pwd)){
-    $("loginError").textContent = "";
-    unlockAdmin();
-  } else {
-    $("loginError").textContent = "❌ Password errata.";
-    $("adminBox").classList.remove("shake");
-    void $("adminBox").offsetWidth;
-    $("adminBox").classList.add("shake");
-    $("adminPass").value = "";
-    $("adminPass").focus();
-  }
-}
-
-/* ============================================================
-   BOOT
-   ============================================================ */
-document.addEventListener("DOMContentLoaded", () => {
-  rebuildCaches();  // popola le cache ORA che tutte le costanti sono definite
-
-  recognition = initRecognition();
-  if (!recognition){
-    setDot('error');
-    setStatusText("⚠️ Riconoscimento vocale non supportato. Usa Chrome/Edge.");
-  }
-
-  micBtn.addEventListener("click", toggleMic);
-
-  $("manualInput").addEventListener("keydown", e => {
-    if (e.key === "Enter"){
-      const v = e.target.value.trim();
-      if (!v) return;
-      handle(v, 'manual');
-      e.target.value = "";
-    }
-  });
-  $("manualBtn").addEventListener("click", () => {
-    const el = $("manualInput");
-    const v = el.value.trim();
-    if (!v) return;
-    handle(v, 'manual');
-    el.value = "";
-  });
-
-  $("adminBtn").addEventListener("click", openAdminModal);
-  $("cancelLogin").addEventListener("click", closeAdminModal);
-  $("submitLogin").addEventListener("click", tryAdminLogin);
-  $("adminPass").addEventListener("keydown", e => {
-    if (e.key === "Enter") tryAdminLogin();
-    if (e.key === "Escape") closeAdminModal();
-  });
-  $("logoutBtn").addEventListener("click", () => {
-    lockAdmin();
-    refreshCsvPanel();
-  });
-  $("closePanelBtn").addEventListener("click", closeAdminModal);
-
-  document.querySelectorAll(".tab").forEach(t => {
-    t.addEventListener("click", () => {
-      document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
-      document.querySelectorAll(".tab-content").forEach(x => x.classList.remove("active"));
-      t.classList.add("active");
-      $("tab-" + t.dataset.tab).classList.add("active");
-      if (t.dataset.tab === "stats") refreshStats();
-      if (t.dataset.tab === "log") refreshLog();
-    });
-  });
-
-  $("loadCsvBtn").addEventListener("click", () => {
-    const r = loadCsvFromText($("csvArea").value);
-    if (r.ok){
-      $("csvStatus").textContent = `✅ Caricate ${r.count} righe dalla textarea.`;
-    } else {
-      $("csvStatus").textContent = `⚠️ ${r.message}`;
-    }
-  });
-
-  $("downloadCsvBtn").addEventListener("click", () => download("portalettere.csv", toCSV(DB)));
-
-  $("resetDbBtn").addEventListener("click", () => {
-    DB = DB_DEFAULT.map(x => ({...x}));
-    rebuildCaches();
-    $("csvStatus").textContent = `↺ Ripristinate ${DB.length} righe di esempio.`;
-    refreshCsvPanel();
-  });
-
-  $("reloadServerBtn").addEventListener("click", async () => {
-    $("csvStatus").textContent = "⏳ Ricaricamento da portalettere.csv…";
-    const r = await loadCsvFromServer('portalettere.csv');
-    if (r.ok){
-      $("csvStatus").textContent = `✅ Ricaricate ${r.count} righe da file in ${r.ms} ms.`;
-      refreshCsvPanel();
-    } else {
-      $("csvStatus").textContent = `⚠️ ${r.message}`;
-    }
-  });
-
-  const uploadBox = $("uploadBox");
-  const fileInput = $("fileInput");
-  function handleFile(file){
-    if (!file) return;
-    if (!file.name.toLowerCase().endsWith('.csv') && file.type !== 'text/csv'){
-      $("csvStatus").textContent = `⚠️ Il file deve essere .csv (ricevuto: ${file.name}).`;
-      return;
-    }
-    $("csvStatus").textContent = `⏳ Lettura di ${file.name}…`;
-    const reader = new FileReader();
-    reader.onload = e => {
-      const text = e.target.result;
-      const r = loadCsvFromText(text);
-      if (r.ok){
-        $("csvStatus").textContent =
-          `✅ Caricate ${r.count} righe da "${file.name}". DB pronto all'uso.`;
-        refreshCsvPanel();
-      } else {
-        $("csvStatus").textContent = `⚠️ ${r.message}`;
-      }
-    };
-    reader.onerror = () => {
-      $("csvStatus").textContent = `⚠️ Errore di lettura del file.`;
-    };
-    reader.readAsText(file, 'UTF-8');
-  }
-  uploadBox.addEventListener("click", () => fileInput.click());
-  fileInput.addEventListener("change", e => {
-    if (e.target.files && e.target.files[0]) handleFile(e.target.files[0]);
-    fileInput.value = "";
-  });
-  ['dragenter','dragover'].forEach(ev => {
-    uploadBox.addEventListener(ev, e => {
-      e.preventDefault(); e.stopPropagation();
-      uploadBox.classList.add("dragover");
-    });
-  });
-  ['dragleave','drop'].forEach(ev => {
-    uploadBox.addEventListener(ev, e => {
-      e.preventDefault(); e.stopPropagation();
-      uploadBox.classList.remove("dragover");
-    });
-  });
-  uploadBox.addEventListener("drop", e => {
-    if (e.dataTransfer.files && e.dataTransfer.files[0])
-      handleFile(e.dataTransfer.files[0]);
-  });
-
-  $("resetStatsBtn").addEventListener("click", () => {
-    if (!confirm("Azzerare tutte le statistiche? L'operazione non è reversibile.")) return;
-    saveStats({ totale:0, match:0, ko:0, fuzzy:0, oggi:0, dataOggi:todayKey(),
-                perVia:{}, perPaese:{}, perPl:{} });
-    refreshStats();
-  });
-
-  $("exportLogBtn").addEventListener("click", () => {
-    const log = getLog();
-    if (!log.length){ alert("Nessuna voce da esportare."); return; }
-    const head = "timestamp,input,esito,risultato,fonte,fuzzy";
-    const esc = v => {
-      const s = String(v == null ? '' : v);
-      return /[",;\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-    };
-    const body = log.map(e => {
-      const iso = new Date(e.ts).toISOString();
-      return [iso, e.input, e.esito, e.risultato, e.fonte, e.fuzzy].map(esc).join(",");
-    });
-    download(`log_ricerche_${todayKey()}.csv`, [head, ...body].join("\r\n"));
-  });
-  $("resetLogBtn").addEventListener("click", () => {
-    if (!confirm("Cancellare tutto il log delle ricerche?")) return;
-    saveLog([]);
-    refreshLog();
-  });
-
-  $("savePwdBtn").addEventListener("click", () => {
-    const oldP = $("pwdOld").value;
-    const newP = $("pwdNew").value;
-    const conf = $("pwdConfirm").value;
-    $("pwdError").textContent = "";
-    $("pwdSuccess").textContent = "";
-
-    if (!verifyPassword(oldP)){
-      $("pwdError").textContent = "❌ Password attuale errata.";
-      return;
-    }
-    if (newP.length < 4){
-      $("pwdError").textContent = "⚠️ La nuova password deve avere almeno 4 caratteri.";
-      return;
-    }
-    if (newP !== conf){
-      $("pwdError").textContent = "⚠️ Le nuove password non coincidono.";
-      return;
-    }
-    if (setStoredPwdHash(hashPwd(newP))){
-      $("pwdSuccess").textContent = "✅ Password aggiornata con successo.";
-      $("pwdOld").value = ""; $("pwdNew").value = ""; $("pwdConfirm").value = "";
-    } else {
-      $("pwdError").textContent = "⚠️ Impossibile salvare: localStorage bloccato dal browser.";
-    }
-  });
-  $("resetPwdBtn").addEventListener("click", () => {
-    if (!confirm("Ripristinare la password predefinita '123456'?")) return;
-    if (setStoredPwdHash(hashPwd(ADMIN_PASSWORD_DEFAULT))){
-      $("pwdSuccess").textContent = "↺ Password ripristinata a 123456.";
-      $("pwdError").textContent = "";
-    }
-  });
-
-  (async () => {
-    const r = await loadCsvFromServer('portalettere.csv');
-    if (r.ok){
-      console.info(`[SortVox] Caricate ${r.count} righe da portalettere.csv in ${r.ms} ms.`);
-    } else {
-      console.info(`[SortVox] ${r.message} — uso il DB di esempio (${DB.length} righe).`);
-    }
-  })();
-});
-</script>
-</body>
-</html>
+const bigNum = $("bigNum"), addrEl = $("addr"), noteEl = $("note
