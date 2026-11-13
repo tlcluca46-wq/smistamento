@@ -306,8 +306,11 @@ const COUNTRY_EXPANSIONS = {
   "SANT'ELENA":"Sant Elena"
 };
 
+/* FIX A: normalizzazione con rimozione accenti */
 function normalize(s){
-  return (s||"").toLowerCase().replace(/[''`]/g," ")
+  return (s||"").toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[''`]/g," ")
     .replace(/[.,;:!?'"()\[\]\/]/g," ").replace(/\s+/g," ").trim();
 }
 function preprocessAbbreviations(s){
@@ -428,6 +431,7 @@ function findTopMatches(tt, cands, n){
   sc.sort((a,b)=>b.sim-a.sim);
   return sc.slice(0,n);
 }
+/* FIX C: skip via===paese anche nel fuzzy */
 function fuzzyCorrect(raw){
   let t = replaceNumbers(normalize(raw));
   const tok = t.split(" ").filter(Boolean);
@@ -439,6 +443,7 @@ function fuzzyCorrect(raw){
   const civM = t.match(/\b(\d{1,4})\b/);
   const civ = civM ? civM[1] : "";
   for (const v of topV) for (const p of topP){
+    if (normalize(v.match) === normalize(p.match)) continue;
     const corr = [v.match, civ, p.match].filter(Boolean).join(" ");
     let r = lookup(corr);
     if (r.ok) return {text:corr, result:r, via:v.match, paese:p.match,
@@ -476,6 +481,7 @@ function containsCountry(text, paese){
   return false;
 }
 
+/* FIX B: skip via===paese anche nel lookup esatto */
 function lookup(raw){
   if (!raw || !raw.trim()) return {ok:false, message:"Nessun testo."};
   let t = normalize(preprocessAbbreviations(raw));
@@ -485,6 +491,7 @@ function lookup(raw){
     const via = normalize(e.via), paese = normalize(e.paese);
     const k = via+"||"+paese;
     if (seen.has(k)) continue;
+    if (via === paese) continue;
     if (containsWord(t, via) && containsCountry(t, e.paese)){
       seen.add(k);
       pairs.push({via, paese, score: via.length+paese.length});
@@ -534,22 +541,14 @@ function lookupSmart(raw){
   return ex;
 }
 
-/* ============================================================
-   RICONOSCIMENTO ORARIO
-   ============================================================ */
+/* RICONOSCIMENTO ORARIO */
 function isTimeRequest(text){
   const t = normalize(text);
   const patterns = [
-    /\bche\s+or[ae]\s+sono\b/,
-    /\bche\s+or[ae]\s+(?:è|e)\b/,
-    /\bche\s+or[ae]\s+fanno\b/,
-    /\bche\s+or[ae]\s+abbiamo\b/,
-    /\bmi\s+(?:dici|sai\s+dire)\s+l\s*or[ao]\b/,
-    /\bdimmi\s+l\s*or[ao]\b/,
-    /\bl\s*orario\s+(?:attuale|di\s+adesso|adesso)\b/,
-    /\bora\s+attuale\b/,
-    /\bche\s+ora\s+si\b/,
-    /\bche\s+ore\s+si\b/
+    /\bche\s+or[ae]\s+sono\b/, /\bche\s+or[ae]\s+(?:e|è)\b/, /\bche\s+or[ae]\s+fanno\b/,
+    /\bche\s+or[ae]\s+abbiamo\b/, /\bmi\s+(?:dici|sai\s+dire)\s+l\s*or[ao]\b/,
+    /\bdimmi\s+l\s*or[ao]\b/, /\bl\s*orario\s+(?:attuale|di\s+adesso|adesso)\b/,
+    /\bora\s+attuale\b/, /\bche\s+ora\s+si\b/, /\bche\s+ore\s+si\b/
   ];
   return patterns.some(p => p.test(t));
 }
@@ -562,18 +561,11 @@ function minutiItaliani(m){
 }
 function getItalianTime(){
   const now = new Date();
-  // Forza il fuso orario italiano
-  const fmt = new Intl.DateTimeFormat('it-IT', {
-    timeZone: 'Europe/Rome',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false
-  });
+  const fmt = new Intl.DateTimeFormat('it-IT', {timeZone:'Europe/Rome', hour:'2-digit', minute:'2-digit', hour12:false});
   const parts = fmt.formatToParts(now);
   const hh = parseInt(parts.find(p => p.type === 'hour').value, 10);
   const mm = parseInt(parts.find(p => p.type === 'minute').value, 10);
   const display = String(hh).padStart(2,'0') + ':' + String(mm).padStart(2,'0');
-
   let speech;
   if (hh === 0 && mm === 0) speech = "È mezzanotte";
   else if (hh === 12 && mm === 0) speech = "È mezzogiorno";
@@ -581,7 +573,6 @@ function getItalianTime(){
   else if (hh === 1) speech = "È l'una" + minutiItaliani(mm);
   else if (hh === 0) speech = "Sono le zero" + minutiItaliani(mm);
   else speech = `Sono le ${numberToItWords(hh)}${minutiItaliani(mm)}`;
-
   return { display, speech };
 }
 
@@ -725,7 +716,6 @@ function handle(text, source){
   if(processing||speaking) return;
   processing=true;
 
-  /* --- Richiesta orario? --- */
   if (isTimeRequest(text)){
     const time = getItalianTime();
     processing = false;
