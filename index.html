@@ -113,7 +113,7 @@ button:active{transform:scale(.97)}
 <main>
   <div class="card result">
     <div class="big">
-      <div class="label">Portalettere</div>
+      <div class="label" id="bigLabel">Portalettere</div>
       <div class="num" id="bigNum">–</div>
     </div>
     <div class="details">
@@ -534,6 +534,57 @@ function lookupSmart(raw){
   return ex;
 }
 
+/* ============================================================
+   RICONOSCIMENTO ORARIO
+   ============================================================ */
+function isTimeRequest(text){
+  const t = normalize(text);
+  const patterns = [
+    /\bche\s+or[ae]\s+sono\b/,
+    /\bche\s+or[ae]\s+(?:è|e)\b/,
+    /\bche\s+or[ae]\s+fanno\b/,
+    /\bche\s+or[ae]\s+abbiamo\b/,
+    /\bmi\s+(?:dici|sai\s+dire)\s+l\s*or[ao]\b/,
+    /\bdimmi\s+l\s*or[ao]\b/,
+    /\bl\s*orario\s+(?:attuale|di\s+adesso|adesso)\b/,
+    /\bora\s+attuale\b/,
+    /\bche\s+ora\s+si\b/,
+    /\bche\s+ore\s+si\b/
+  ];
+  return patterns.some(p => p.test(t));
+}
+function minutiItaliani(m){
+  if (m === 0) return "";
+  if (m === 15) return " e un quarto";
+  if (m === 30) return " e mezza";
+  if (m === 45) return " e quarantacinque";
+  return " e " + numberToItWords(m);
+}
+function getItalianTime(){
+  const now = new Date();
+  // Forza il fuso orario italiano
+  const fmt = new Intl.DateTimeFormat('it-IT', {
+    timeZone: 'Europe/Rome',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  });
+  const parts = fmt.formatToParts(now);
+  const hh = parseInt(parts.find(p => p.type === 'hour').value, 10);
+  const mm = parseInt(parts.find(p => p.type === 'minute').value, 10);
+  const display = String(hh).padStart(2,'0') + ':' + String(mm).padStart(2,'0');
+
+  let speech;
+  if (hh === 0 && mm === 0) speech = "È mezzanotte";
+  else if (hh === 12 && mm === 0) speech = "È mezzogiorno";
+  else if (hh === 1 && mm === 0) speech = "È l'una";
+  else if (hh === 1) speech = "È l'una" + minutiItaliani(mm);
+  else if (hh === 0) speech = "Sono le zero" + minutiItaliani(mm);
+  else speech = `Sono le ${numberToItWords(hh)}${minutiItaliani(mm)}`;
+
+  return { display, speech };
+}
+
 let voices=[];
 function loadVoices(){ if (!("speechSynthesis" in window)) return; voices = window.speechSynthesis.getVoices(); }
 if ("speechSynthesis" in window){ loadVoices(); window.speechSynthesis.onvoiceschanged = loadVoices; }
@@ -610,7 +661,7 @@ function recordLog(raw, res, source, fuzzy){
 }
 
 const $=id=>document.getElementById(id);
-const bigNum=$("bigNum"), addrEl=$("addr"), noteEl=$("note"), fzEl=$("fuzzyNote"),
+const bigNum=$("bigNum"), bigLabel=$("bigLabel"), addrEl=$("addr"), noteEl=$("note"), fzEl=$("fuzzyNote"),
   liveEl=$("live"), statusTextEl=$("statusText"), dotEl=$("dot"),
   micBtn=$("micBtn"), historyEl=$("history"), headerState=$("headerState");
 let history=[];
@@ -620,6 +671,7 @@ function setHeader(t){ headerState.textContent=t; }
 function setLive(t){ liveEl.innerHTML = t ? `<b>🎤</b> ${esc(t)}` : ""; }
 function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function renderResult(res, raw){
+  bigLabel.textContent = "Portalettere";
   if (res.ok){
     bigNum.textContent=(res.portalettere||[]).join(" · ");
     addrEl.textContent=res.message;
@@ -672,6 +724,30 @@ function updateMicBtn(){
 function handle(text, source){
   if(processing||speaking) return;
   processing=true;
+
+  /* --- Richiesta orario? --- */
+  if (isTimeRequest(text)){
+    const time = getItalianTime();
+    processing = false;
+    bigLabel.textContent = "Ora";
+    bigNum.textContent = time.display;
+    addrEl.textContent = time.speech;
+    noteEl.textContent = `Comando: "${text}"`;
+    fzEl.style.display = "none";
+    setLive("");
+    history.unshift({raw:text, shown:time.display, suf:" 🕐"});
+    history = history.slice(0,5);
+    historyEl.innerHTML = history.map(h=>`<li><b>${esc(h.shown)}${h.suf}</b> — ${esc(h.raw)}</li>`).join("");
+    speaking = true; setDot('speaking'); setStatus('🔊 Sto rispondendo…'); setHeader('risposta');
+    try{ rec && rec.stop(); }catch(_){}
+    speak(time.speech, ()=>{
+      speaking = false;
+      if(wantListening) setTimeout(startRec,450);
+      else { setDot(''); setStatus('Microfono spento'); setHeader('inattivo'); }
+    });
+    return;
+  }
+
   const res = lookupSmart(text);
   if(!res.ok && source==='voice'){ processing=false; setLive(""); return; }
   renderResult(res, text); setLive("");
