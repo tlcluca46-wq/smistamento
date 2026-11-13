@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Assistente Smistamento Postale</title>
+<style>
+  :root{
+    --bg:#0f1720; --card:#17222e; --card2:#1e2b3a;
+    --accent:#ffb400; --ok:#2ecc71; --err:#e74c3c; --txt:#eaf0f6; --muted:#8fa3b8;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background:var(--bg); color:var(--txt); min-height:100vh;
+  }
+  header{
+    padding:18px 22px; background:linear-gradient(90deg,#ffb400,#ff8c00);
+    color:#1a1a1a; font-weight:800; font-size:1.15rem; letter-spacing:.4px;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  header small{font-weight:600; opacity:.8; font-size:.8rem}
+  main{max-width:860px; margin:0 auto; padding:22px}
+
+  .card{background:var(--card); border-radius:16px; padding:20px; margin-bottom:16px;
+        box-shadow:0 6px 20px rgba(0,0,0,.25)}
+
+  .result{display:flex; align-items:center; gap:24px; flex-wrap:wrap}
+  .big{
+    flex:0 0 auto; min-width:170px; text-align:center;
+    background:var(--card2); border-radius:16px; padding:14px 22px;
+    border:2px solid var(--accent);
+  }
+  .big .label{font-size:.75rem; letter-spacing:2px; color:var(--muted); text-transform:uppercase}
+  .big .num{font-size:4.2rem; font-weight:900; color:var(--accent); line-height:1; margin-top:6px}
+  .details{flex:1 1 260px}
+  .details .addr{font-size:1.35rem; font-weight:700; line-height:1.3}
+  .details .note{color:var(--muted); margin-top:6px; font-size:.95rem}
+
+  .controls{display:flex; gap:12px; align-items:center; flex-wrap:wrap}
+  button{
+    font:inherit; border:none; border-radius:12px; padding:14px 20px;
+    cursor:pointer; font-weight:700; transition:.15s; font-size:1rem;
+  }
+  button:active{transform:scale(.97)}
+  .mic{
+    background:var(--accent); color:#1a1a1a; min-width:220px;
+    display:flex; align-items:center; justify-content:center; gap:10px;
+  }
+  .mic.on{background:var(--err); color:#fff; animation:pulse 1.4s infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(231,76,60,.6)}50%{box-shadow:0 0 0 12px rgba(231,76,60,0)}}
+  .ghost{background:var(--card2); color:var(--txt); border:1px solid #2c3e50}
+
+  .status{color:var(--muted); font-size:.9rem; margin-left:4px}
+
+  .manual{display:flex; gap:10px; margin-top:6px}
+  .manual input{
+    flex:1; font:inherit; padding:14px 16px; border-radius:12px; border:1px solid #2c3e50;
+    background:var(--card2); color:var(--txt); font-size:1.05rem;
+  }
+  .manual input:focus{outline:2px solid var(--accent); border-color:transparent}
+
+  .live{margin-top:10px; color:var(--muted); font-style:italic; min-height:1.4em}
+  .live b{color:var(--txt); font-style:normal}
+
+  .history{list-style:none; padding:0; margin:0}
+  .history li{padding:8px 0; border-bottom:1px solid #24313f; font-size:.9rem; color:var(--muted)}
+  .history li b{color:var(--accent); font-size:1.05rem}
+
+  details summary{cursor:pointer; font-weight:700; color:var(--accent); padding:4px 0}
+  textarea{
+    width:100%; min-height:150px; margin-top:10px; background:#0b131b; color:var(--txt);
+    border:1px solid #2c3e50; border-radius:10px; padding:10px; font-family:ui-monospace,monospace;
+    font-size:.85rem;
+  }
+  .row{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px}
+  .warn{color:#ffcc66; font-size:.85rem; margin-top:8px}
+</style>
+</head>
+<body>
+
+<header>
+  <div>📮 Assistente Smistamento</div>
+  <small>voce → portalettere</small>
+</header>
+
+<main>
+
+  <!-- RESULT -->
+  <div class="card result" id="resultCard">
+    <div class="big">
+      <div class="label">Portalettere</div>
+      <div class="num" id="bigNum">–</div>
+    </div>
+    <div class="details">
+      <div class="addr" id="addr">In attesa di un comando…</div>
+      <div class="note" id="note">Premi il microfono e pronuncia via, civico e comune.</div>
+    </div>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="card">
+    <div class="controls">
+      <button class="mic" id="micBtn">🎙️ Attiva microfono</button>
+      <span class="status" id="status">Microfono spento</span>
+    </div>
+
+    <div class="live" id="live"></div>
+
+    <div class="manual" style="margin-top:16px">
+      <input id="manualInput" placeholder="…oppure scrivi: VIA ROMA 111, GRAVINA DI CATANIA" autocomplete="off">
+      <button class="ghost" id="manualBtn">Cerca</button>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="card">
+    <div style="font-weight:700; margin-bottom:8px">Ultime richieste</div>
+    <ul class="history" id="history"><li>Nessuna richiesta.</li></ul>
+  </div>
+
+  <!-- CSV -->
+  <div class="card">
+    <details>
+      <summary>⚙️ Gestione database (CSV)</summary>
+      <p class="warn">
+        Formato atteso: <code>via,civico_da,civico_a,paese,cap,portalettere</code><br>
+        Puoi usare la virgola o il punto e virgola. L'intestazione è facoltativa.
+      </p>
+      <textarea id="csvArea" placeholder="Via Roma,1,199,Gravina di Catania,95030,39
+Via Roma,200,299,Gravina di Catania,95030,40
+..."></textarea>
+      <div class="row">
+        <button class="ghost" id="loadCsvBtn">Carica CSV</button>
+        <button class="ghost" id="downloadCsvBtn">Scarica CSV attuale</button>
+        <button class="ghost" id="resetDbBtn">Ripristina DB di esempio</button>
+      </div>
+      <div class="status" id="csvStatus" style="margin-top:8px"></div>
+    </details>
+  </div>
+
+</main>
+
+<script>
+/* =====================================================================
+   1) DATABASE DI ESEMPIO — ~100 vie in 10 comuni italiani
+   Puoi sostituirlo in qualsiasi momento dal pannello CSV.
+   ===================================================================== */
+const DB_DEFAULT = [
+  // --- Gravina di Catania (CT) 95030 ---
+  { via:"Via Roma",               da:1,  a:199, paese:"Gravina di Catania", cap:"95030", portalettere:"39" },
+  { via:"Via Roma",               da:200,a:299, paese:"Gravina di Catania", cap:"95030", portalettere:"40" },
+  { via:"Via Etnea",              da:1,  a:999, paese:"Gravina di Catania", cap:"95030", portalettere:"12" },
+  { via:"Via Garibaldi",          da:1,  a:999, paese:"Gravina di Catania", cap:"95030", portalettere:"15" },
+  { via:"Corso Italia",           da:1,  a:999, paese:"Gravina di Catania", cap:"95030", portalettere:"22" },
+  { via:"Via Vittorio Emanuele",  da:1,  a:999, paese:"Gravina di Catania", cap:"95030", portalettere:"8"  },
+  { via:"Via Catania",            da:1,  a:999, paese:"Gravina di Catania", cap:"95030", portalettere:"27" },
+  { via:"Via Palermo",            da:1,  a:999, paese:"Gravina di Catania", cap:"95030", portalettere:"33" },
+  { via:"Via della Repubblica",   da:1,  a:999, paese:"Gravina di Catania", cap:"95030", portalettere:"41" },
+  { via:"Viale Europa",           da:1,  a:999, paese:"Gravina di Catania", cap:"95030", portalettere:"51" },
+
+  // --- Catania (CT) 95100 ---
+  { via:"Via Etnea",              da:1,  a:999, paese:"Catania", cap:"95100", portalettere:"5"  },
+  { via:"Via Roma",               da:1,  a:999, paese:"Catania", cap:"95100", portalettere:"11" },
+  { via:"Corso Sicilia",          da:1,  a:999, paese:"Catania", cap:"95100", portalettere:"14" },
+  { via:"Via Umberto",            da:1,  a:999, paese:"Catania", cap:"95100", portalettere:"19" },
+  { via:"Via Garibaldi",          da:1,  a:999, paese:"Catania", cap:"95100", portalettere:"23" },
+  { via:"Piazza Duomo",           da:1,  a:999, paese:"Catania", cap:"95100", portalettere:"7"  },
+  { via:"Via Sant'Euplio",        da:1,  a:999, paese:"Catania", cap:"95100", portalettere:"28" },
+  { via:"Via Acquicella",         da:1,  a:999, paese:"Catania", cap:"95100", portalettere:"34" },
+  { via:"Via Milano",             da:1,  a:999, paese:"Catania", cap:"95100", portalettere:"45" },
+  { via:"Viale Africa",           da:1,  a:999, paese:"Catania", cap:"95100", portalettere:"52" },
+
+  // --- Roma (RM) 00100 ---
+  { via:"Via Roma",               da:1,  a:999, paese:"Roma", cap:"00100", portalettere:"3"  },
+  { via:"Via del Corso",          da:1,  a:999, paese:"Roma", cap:"00100", portalettere:"6"  },
+  { via:"Via Nazionale",          da:1,  a:999, paese:"Roma", cap:"00100", portalettere:"9"  },
+  { via:"Via Veneto",             da:1,  a:999, paese:"Roma", cap:"00100", portalettere:"13" },
+  { via:"Via del Colosseo",       da:1,  a:999, paese:"Roma", cap:"00100", portalettere:"17" },
+  { via:"Via Appia",              da:1,  a:999, paese:"Roma", cap:"00100", portalettere:"21" },
+  { via:"Via Tiburtina",          da:1,  a:999, paese:"Roma", cap:"00100", portalettere:"25" },
+  { via:"Via Cassia",             da:1,  a:999, paese:"Roma", cap:"00100", portalettere:"30" },
+  { via:"Via Aurelia",            da:1,  a:999, paese:"Roma", cap:"00100", portalettere:"36" },
+  { via:"Viale Trastevere",       da:1,  a:999, paese:"Roma", cap:"00100", portalettere:"42" },
+
+  // --- Milano (MI) 20100 ---
+  { via:"Corso Buenos Aires",     da:1,  a:999, paese:"Milano", cap:"20100", portalettere:"4"  },
+  { via:"Via Torino",             da:1,  a:999, paese:"Milano", cap:"20100", portalettere:"10" },
+  { via:"Via Dante",              da:1,  a:999, paese:"Milano", cap:"20100", portalettere:"16" },
+  { via:"Corso Como",             da:1,  a:999, paese:"Milano", cap:"20100", portalettere:"20" },
+  { via:"Via Montenapoleone",     da:1,  a:999, paese:"Milano", cap:"20100", portalettere:"24" },
+  { via:"Via Manzoni",            da:1,  a:999, paese:"Milano", cap:"20100", portalettere:"29" },
+  { via:"Via Roma",               da:1,  a:999, paese:"Milano", cap:"20100", portalettere:"35" },
+  { via:"Viale Certosa",          da:1,  a:999, paese:"Milano", cap:"20100", portalettere:"38" },
+  { via:"Via Ripamonti",          da:1,  a:999, paese:"Milano", cap:"20100", portalettere:"44" },
+  { via:"Corso Sempione",         da:1,  a:999, paese:"Milano", cap:"20100", portalettere:"49" },
+
+  // --- Napoli (NA) 80100 ---
+  { via:"Via Toledo",             da:1,  a:999, paese:"Napoli", cap:"80100", portalettere:"2"  },
+  { via:"Via Chiaia",             da:1,  a:999, paese:"Napoli", cap:"80100", portalettere:"11" },
+  { via:"Corso Umberto",          da:1,  a:999, paese:"Napoli", cap:"80100", portalettere:"17" },
+  { via:"Via Duomo",              da:1,  a:999, paese:"Napoli", cap:"80100", portalettere:"22" },
+  { via:"Via Posillipo",          da:1,  a:999, paese:"Napoli", cap:"80100", portalettere:"26" },
+  { via:"Via Caracciolo",         da:1,  a:999, paese:"Napoli", cap:"80100", portalettere:"31" },
+  { via:"Via Foria",              da:1,  a:999, paese:"Napoli", cap:"80100", portalettere:"37" },
+  { via:"Piazza Garibaldi",       da:1,  a:999, paese:"Napoli", cap:"80100", portalettere:"43" },
+  { via:"Via Marina",             da:1,  a:999, paese:"Napoli", cap:"80100", portalettere:"48" },
+  { via:"Viale Kennedy",          da:1,  a:999, paese:"Napoli", cap:"80100", portalettere:"53" },
+
+  // --- Torino (TO) 10100 ---
+  { via:"Via Po",                 da:1,  a:999, paese:"Torino", cap:"10100", portalettere:"5"  },
+  { via:"Via Roma",               da:1,  a:999, paese:"Torino", cap:"10100", portalettere:"12" },
+  { via:"Corso Vittorio Emanuele",da:1,  a:999, paese:"Torino", cap:"10100", portalettere:"18" },
+  { via:"Via Garibaldi",          da:1,  a:999, paese:"Torino", cap:"10100", portalettere:"24" },
+  { via:"Corso Francia",          da:1,  a:999, paese:"Torino", cap:"10100", portalettere:"28" },
+  { via:"Via Nizza",              da:1,  a:999, paese:"Torino", cap:"10100", portalettere:"32" },
+  { via:"Corso Regina Margherita",da:1,  a:999, paese:"Torino", cap:"10100", portalettere:"39" },
+  { via:"Via Cibrario",           da:1,  a:999, paese:"Torino", cap:"10100", portalettere:"46" },
+  { via:"Via Monginevro",         da:1,  a:999, paese:"Torino", cap:"10100", portalettere:"50" },
+  { via:"Corso Giulio Cesare",    da:1,  a:999, paese:"Torino", cap:"10100", portalettere:"54" },
+
+  // --- Bologna (BO) 40100 ---
+  { via:"Via Rizzoli",            da:1,  a:999, paese:"Bologna", cap:"40100", portalettere:"6"  },
+  { via:"Via Indipendenza",       da:1,  a:999, paese:"Bologna", cap:"40100", portalettere:"13" },
+  { via:"Via Zamboni",            da:1,  a:999, paese:"Bologna", cap:"40100", portalettere:"19" },
+  { via:"Via Irnerio",            da:1,  a:999, paese:"Bologna", cap:"40100", portalettere:"25" },
+  { via:"Via Mazzini",            da:1,  a:999, paese:"Bologna", cap:"40100", portalettere:"30" },
+  { via:"Via Ugo Bassi",          da:1,  a:999, paese:"Bologna", cap:"40100", portalettere:"34" },
+  { via:"Via Santo Stefano",      da:1,  a:999, paese:"Bologna", cap:"40100", portalettere:"40" },
+  { via:"Via Saragozza",          da:1,  a:999, paese:"Bologna", cap:"40100", portalettere:"47" },
+  { via:"Via Toscana",            da:1,  a:999, paese:"Bologna", cap:"40100", portalettere:"51" },
+  { via:"Viale Silvani",          da:1,  a:999, paese:"Bologna", cap:"40100", portalettere:"55" },
+
+  // --- Firenze (FI) 50100 ---
+  { via:"Via Roma",               da:1,  a:999, paese:"Firenze", cap:"50100", portalettere:"7"  },
+  { via:"Via dei Calzaiuoli",     da:1,  a:999, paese:"Firenze", cap:"50100", portalettere:"14" },
+  { via:"Via Tornabuoni",         da:1,  a:999, paese:"Firenze", cap:"50100", portalettere:"21" },
+  { via:"Via del Proconsolo",     da:1,  a:999, paese:"Firenze", cap:"50100", portalettere:"27" },
+  { via:"Via Ghibellina",         da:1,  a:999, paese:"Firenze", cap:"50100", portalettere:"33" },
+  { via:"Via dei Servi",          da:1,  a:999, paese:"Firenze", cap:"50100", portalettere:"38" },
+  { via:"Lungarno Vespucci",      da:1,  a:999, paese:"Firenze", cap:"50100", portalettere:"44" },
+  { via:"Viale dei Mille",        da:1,  a:999, paese:"Firenze", cap:"50100", portalettere:"48" },
+  { via:"Via Pisana",             da:1,  a:999, paese:"Firenze", cap:"50100", portalettere:"52" },
+  { via:"Via Bolognese",          da:1,  a:999, paese:"Firenze", cap:"50100", portalettere:"56" },
+
+  // --- Palermo (PA) 90100 ---
+  { via:"Via Libertà",            da:1,  a:999, paese:"Palermo", cap:"90100", portalettere:"8"  },
+  { via:"Via Roma",               da:1,  a:999, paese:"Palermo", cap:"90100", portalettere:"15" },
+  { via:"Corso Vittorio Emanuele",da:1,  a:999, paese:"Palermo", cap:"90100", portalettere:"20" },
+  { via:"Via Maqueda",            da:1,  a:999, paese:"Palermo", cap:"90100", portalettere:"26" },
+  { via:"Via Notarbartolo",       da:1,  a:999, paese:"Palermo", cap:"90100", portalettere:"32" },
+  { via:"Via Lincoln",            da:1,  a:999, paese:"Palermo", cap:"90100", portalettere:"36" },
+  { via:"Via Oreto",              da:1,  a:999, paese:"Palermo", cap:"90100", portalettere:"41" },
+  { via:"Viale Regione Siciliana",da:1,  a:999, paese:"Palermo", cap:"90100", portalettere:"45" },
+  { via:"Via Messina",            da:1,  a:999, paese:"Palermo", cap:"90100", portalettere:"49" },
+  { via:"Via dell'Orologio",      da:1,  a:999, paese:"Palermo", cap:"90100", portalettere:"57" },
+
+  // --- Bari (BA) 70100 ---
+  { via:"Via Sparano",            da:1,  a:999, paese:"Bari", cap:"70100", portalettere:"9"  },
+  { via:"Corso Cavour",           da:1,  a:999, paese:"Bari", cap:"70100", portalettere:"16" },
+  { via:"Via Andrea da Bari",     da:1,  a:999, paese:"Bari", cap:"70100", portalettere:"23" },
+  { via:"Via Manzoni",            da:1,  a:999, paese:"Bari", cap:"70100", portalettere:"28" },
+  { via:"Via Abbrescia",          da:1,  a:999, paese:"Bari", cap:"70100", portalettere:"35" },
+  { via:"Lungomare Nazario Sauro",da:1,  a:999, paese:"Bari", cap:"70100", portalettere:"42" },
+  { via:"Via Amendola",           da:1,  a:999, paese:"Bari", cap:"70100", portalettere:"46" },
+  { via:"Via della Repubblica",   da:1,  a:999, paese:"Bari", cap:"70100", portalettere:"50" },
+  { via:"Via Brigata Regina",     da:1,  a:999, paese:"Bari", cap:"70100", portalettere:"54" },
+  { via:"Viale Unità d'Italia",   da:1,  a:999, paese:"Bari", cap:"70100", portalettere:"58" },
+];
+
+let DB = DB_DEFAULT.map(x => ({...x}));   // copia di lavoro
+
+
+/* =====================================================================
+   2) NUMERI ITALIANI → CIFRE  (il recognizer a volte scrive "centoundici")
+   ===================================================================== */
+const _U = ["","uno","due","tre","quattro","cinque","sei","sette","otto","nove",
+            "dieci","undici","dodici","tredici","quattordici","quindici","sedici",
+            "diciassette","diciotto","diciannove"];
+const _T = ["","","venti","trenta","quaranta","cinquanta","sessanta","settanta","ottanta","novanta"];
+
+function _below100(n){
+  if (n < 20) return _U[n];
+  const d = Math.floor(n/10), r = n%10;
+  let base = _T[d];
+  if (r === 1 || r === 8) base = base.slice(0,-1);
+  return base + _U[r];
+}
+function _variants(n){
+  if (n === 0) return ["zero"];
+  if (n < 100) return [_below100(n)];
+  const h = Math.floor(n/100), r = n%100;
+  const prefix = (h === 1 ? "cento" : _U[h] + "cento");
+  if (r === 0) return [prefix];
+  const out = [];
+  for (const rv of _variants(r)){
+    out.push(prefix + rv);                              // es. centootto
+    if (prefix.endsWith("o") && rv.startsWith("o"))
+      out.push(prefix.slice(0,-1) + rv);                // es. centotto
+  }
+  return out;
+}
+const NUM_MAP = {};
+for (let n = 0; n <= 999; n++){
+  for (const w of _variants(n)){
+    NUM_MAP[w] = String(n);
+    if (w.endsWith("tre") && w !== "tre") NUM_MAP[w.slice(0,-3)+"tré"] = String(n);
+  }
+}
+function replaceNumbers(text){
+  return text.split(" ").map(t => NUM_MAP[t] || t).join(" ");
+}
+
+
+/* =====================================================================
+   3) PARSER / LOOKUP
+   ===================================================================== */
+function normalize(s){
+  return (s || "")
+    .toLowerCase()
+    .replace(/[.,;:!?'"()\[\]\/]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function lookup(raw){
+  if (!raw || !raw.trim())
+    return { ok:false, message:"Nessun testo ricevuto." };
+
+  let t = normalize(raw);
+  t = replaceNumbers(t);
+
+  // --- trova la migliore coppia (via, paese) contenuta nel testo
+  const pairs = [];
+  const seen = new Set();
+  for (const e of DB){
+    const via   = normalize(e.via);
+    const paese = normalize(e.paese);
+    const key = via + "||" + paese;
+    if (seen.has(key)) continue;
+    if (t.includes(via) && t.includes(paese)){
+      seen.add(key);
+      pairs.push({ via, paese, score: via.length + paese.length });
+    }
+  }
+  if (!pairs.length){
+    return { ok:false, message:"Nessuna via/comune trovato nel database.",
+             transcript: raw };
+  }
+  pairs.sort((a,b) => b.score - a.score);
+  const top = pairs[0];
+
+  // --- estrae il civico (primo numero subito dopo la via)
+  const viaIdx = t.indexOf(top.via);
+  const after  = t.slice(viaIdx + top.via.length);
+  const m = after.match(/\b(\d{1,4})\b/);
+  const civico = m ? parseInt(m[1], 10) : null;
+
+  // --- tutte le entry per quella via + paese (per gestire i range)
+  const entries = DB.filter(e =>
+    normalize(e.via) === top.via && normalize(e.paese) === top.paese);
+
+  const displayVia   = entries[0].via;
+  const displayPaese = entries[0].paese;
+  const displayCap   = entries[0].cap;
+
+  if (civico === null){
+    const postini = [...new Set(entries.map(e => e.portalettere))];
+    return {
+      ok:true, portalettere: postini,
+      via: displayVia, paese: displayPaese, cap: displayCap, civico: null,
+      message: `Civico non indicato. ${displayVia}, ${displayPaese}. ` +
+               (postini.length > 1
+                 ? `La via è servita dai portalettere ${postini.join(", ")}.`
+                 : `Portalettere ${postini[0]}.`),
+      speak: postini.join(", ")
+    };
+  }
+
+  const match = entries.find(e => civico >= e.da && civico <= e.a);
+  if (!match){
+    const postini = [...new Set(entries.map(e => e.portalettere))];
+    return {
+      ok:true, portalettere: postini,
+      via: displayVia, paese: displayPaese, cap: displayCap, civico,
+      message: `Civico ${civico} non in range per ${displayVia}, ${displayPaese}. ` +
+               `La via è servita da: ${postini.join(", ")}.`,
+      speak: postini.join(", ")
+    };
+  }
+
+  return {
+    ok:true, portalettere:[match.portalettere],
+    via: displayVia, paese: displayPaese, cap: displayCap, civico,
+    message: `${displayVia} ${civico} — ${displayPaese} (${displayCap})`,
+    speak: match.portalettere
+  };
+}
+
+
+/* =====================================================================
+   4) UI
+   ===================================================================== */
+const $ = id => document.getElementById(id);
+const bigNum   = $("bigNum");
+const addrEl   = $("addr");
+const noteEl   = $("note");
+const liveEl   = $("live");
+const statusEl = $("status");
+const micBtn   = $("micBtn");
+const historyEl= $("history");
+
+let history = [];
+
+function renderResult(res, raw){
+  if (res.ok){
+    bigNum.textContent = (res.portalettere || []).join(" · ");
+    addrEl.textContent = res.message;
+    noteEl.textContent = `Comando: "${raw}"`;
+  } else {
+    bigNum.textContent = "?";
+    addrEl.textContent = "Nessuna corrispondenza";
+    noteEl.textContent = res.message + (res.transcript ? ` — ho sentito: "${res.transcript}"` : "");
+  }
+  // history
+  const shown = (res.portalettere || []).join(" · ") || "?";
+  history.unshift({ raw, shown, message: res.message });
+  history = history.slice(0, 5);
+  historyEl.innerHTML = history.map(h =>
+    `<li><b>${h.shown}</b> — ${escapeHtml(h.raw)}</li>`).join("")
+    || "<li>Nessuna richiesta.</li>";
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function setLive(text){
+  liveEl.innerHTML = text ? `<b>🎤</b> ${escapeHtml(text)}` : "";
+}
+function setStatus(s){ statusEl.textContent = s; }
+
+
+/* =====================================================================
+   5) VOCE
+   ===================================================================== */
+let recognition = null;
+let listening   = false;
+let speaking    = false;
+let processing  = false;
+
+function initRecognition(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return null;
+  const r = new SR();
+  r.lang = "it-IT";
+  r.continuous = true;
+  r.interimResults = true;
+  r.maxAlternatives = 1;
+
+  r.onresult = (ev) => {
+    let interim = "", finalText = "";
+    for (let i = ev.resultIndex; i < ev.results.length; i++){
+      const res = ev.results[i];
+      if (res.isFinal) finalText += res[0].transcript + " ";
+      else              interim   += res[0].transcript;
+    }
+    if (!processing && !speaking && interim) setLive(interim);
+    if (!processing && !speaking && finalText.trim()){
+      setLive(finalText.trim());
+      handle(finalText.trim());
+    }
+  };
+
+  r.onerror = (e) => {
+    console.warn("Speech error:", e.error);
+    if (e.error === "not-allowed" || e.error === "service-not-allowed"){
+      setStatus("⚠️ Permesso microfono negato. Usa l'input manuale o abilita il microfono.");
+      listening = false;
+      updateMicBtn();
+    }
+  };
+
+  r.onend = () => {
+    // riavvio automatico SOLO se l'utente vuole ancora ascoltare
+    // e non stiamo parlando noi (per evitare loop di eco)
+    if (listening && !speaking){
+      setTimeout(() => {
+        if (listening && !speaking){
+          try { r.start(); } catch(_){}
+        }
+      }, 250);
+    }
+  };
+  return r;
+}
+
+function updateMicBtn(){
+  if (listening){
+    micBtn.classList.add("on");
+    micBtn.textContent = "⏹️ Ferma microfono";
+  } else {
+    micBtn.classList.remove("on");
+    micBtn.textContent = "🎙️ Attiva microfono";
+  }
+}
+
+function speakNow(text, cb){
+  if (!("speechSynthesis" in window)){ cb && cb(); return; }
+  try { window.speechSynthesis.cancel(); } catch(_){}
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "it-IT";
+  u.rate = 1.05;
+  u.pitch = 1;
+  let done = false, timer = null;
+  const finish = () => {
+    if (done) return;
+    done = true;
+    if (timer) clearTimeout(timer);
+    cb && cb();
+  };
+  u.onend = finish;
+  u.onerror = finish;
+  timer = setTimeout(finish, 10000);   // rete di sicurezza
+  window.speechSynthesis.speak(u);
+}
+
+function handle(text){
+  if (processing || speaking) return;
+  processing = true;
+
+  const res = lookup(text);
+  renderResult(res, text);
+  setLive("");
+
+  const toSay = (res.portalettere && res.portalettere.length)
+                  ? res.portalettere.join(" ")
+                  : "";
+
+  if (!toSay){
+    processing = false;
+    if (listening && !speaking){
+      try { recognition.start(); } catch(_){}
+    }
+    return;
+  }
+
+  // mettiamo in pausa il recognizer per non farci sentire da soli
+  speaking = true;
+  try { recognition && recognition.stop(); } catch(_){}
+
+  speakNow(toSay, () => {
+    speaking = false;
+    processing = false;
+    if (listening){
+      setTimeout(() => {
+        if (listening && !speaking){
+          try { recognition.start(); } catch(_){}
+        }
+      }, 350);
+    }
+  });
+}
+
+function toggleMic(){
+  if (!recognition){
+    setStatus("⚠️ Riconoscimento vocale non supportato da questo browser. Usa Chrome/Edge o l'input manuale.");
+    return;
+  }
+  if (listening){
+    listening = false;
+    try { recognition.stop(); } catch(_){}
+    setStatus("Microfono spento");
+    updateMicBtn();
+  } else {
+    listening = true;
+    setStatus("Attivazione…");
+    updateMicBtn();
+    // sblocca l'audio con un breve messaggio
+    speaking = true;
+    speakNow("Assistente attivo", () => {
+      speaking = false;
+      if (listening){
+        try { recognition.start(); } catch(_){}
+        setStatus("🔴 In ascolto…");
+      }
+    });
+  }
+}
+
+
+/* =====================================================================
+   6) CSV (import / export)
+   ===================================================================== */
+function parseCSV(text){
+  const lines = text.trim().split(/\r?\n/).filter(l => l.trim().length);
+  if (!lines.length) return [];
+  const sep = lines[0].includes(";") ? ";" : ",";
+  let start = 0;
+  // salta intestazione se la 2ª colonna non è un numero
+  const firstCols = lines[0].split(sep);
+  if (firstCols.length > 1 && isNaN(parseInt(firstCols[1], 10))) start = 1;
+
+  const out = [];
+  for (let i = start; i < lines.length; i++){
+    const p = lines[i].split(sep).map(s => s.trim());
+    if (p.length < 4) continue;
+    out.push({
+      via:          p[0],
+      da:           parseInt(p[1], 10) || 1,
+      a:            parseInt(p[2], 10) || 999,
+      paese:        p[3],
+      cap:          p[4] || "",
+      portalettere: p[5] || p[4] || ""
+    });
+  }
+  return out;
+}
+
+function toCSV(rows){
+  const head = "via,civico_da,civico_a,paese,cap,portalettere";
+  const body = rows.map(r =>
+    [r.via, r.da, r.a, r.paese, r.cap, r.portalettere]
+      .map(v => String(v).includes(",") ? `"${v}"` : v).join(",")
+  );
+  return [head, ...body].join("\n");
+}
+
+function download(filename, content){
+  const blob = new Blob([content], {type:"text/csv;charset=utf-8;"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+
+/* =====================================================================
+   7) BOOT
+   ===================================================================== */
+document.addEventListener("DOMContentLoaded", () => {
+  recognition = initRecognition();
+  if (!recognition){
+    setStatus("⚠️ Riconoscimento vocale non supportato. Usa Chrome/Edge o l'input manuale.");
+  }
+
+  micBtn.addEventListener("click", toggleMic);
+
+  $("manualInput").addEventListener("keydown", e => {
+    if (e.key === "Enter"){
+      const v = e.target.value.trim();
+      if (!v) return;
+      handle(v);
+      e.target.value = "";
+    }
+  });
+  $("manualBtn").addEventListener("click", () => {
+    const el = $("manualInput");
+    const v = el.value.trim();
+    if (!v) return;
+    handle(v);
+    el.value = "";
+  });
+
+  $("loadCsvBtn").addEventListener("click", () => {
+    const txt = $("csvArea").value;
+    const rows = parseCSV(txt);
+    if (!rows.length){
+      $("csvStatus").textContent = "⚠️ Nessuna riga valida trovata.";
+      return;
+    }
+    DB = rows;
+    $("csvStatus").textContent = `✅ Caricate ${rows.length} righe nel database.`;
+  });
+
+  $("downloadCsvBtn").addEventListener("click", () => {
+    download("portalettere.csv", toCSV(DB));
+  });
+
+  $("resetDbBtn").addEventListener("click", () => {
+    DB = DB_DEFAULT.map(x => ({...x}));
+    $("csvStatus").textContent = `↺ Ripristinate ${DB.length} righe di esempio.`;
+    $("csvArea").value = "";
+  });
+
+  // popola la textarea con il DB attuale come aiuto
+  $("csvArea").value = toCSV(DB);
+});
+</script>
+</body>
+</html>
