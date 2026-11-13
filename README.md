@@ -1,2 +1,0 @@
-# smistamento
-1
