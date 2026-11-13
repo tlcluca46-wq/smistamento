@@ -236,9 +236,6 @@ button:active{transform:scale(.97)}
 </div>
 
 <script>
-/* ============================================================
-   CONFIG
-   ============================================================ */
 const ADMIN_PASSWORD_DEFAULT = "123456";
 const ADMIN_SESSION_KEY = "assistente_smistamento_admin";
 const PWD_STORAGE_KEY   = "assistente_pwd_hash";
@@ -247,7 +244,6 @@ const LOG_STORAGE_KEY   = "assistente_log";
 const LOG_MAX_ENTRIES   = 1000;
 const FUZZY_THRESHOLD   = 0.72;
 
-/* DB di esempio minimal (verrà sovrascritto dal CSV) */
 const DB_DEFAULT = [
   {via:"Roma",da:1,a:199,paese:"Gravina di Catania",cap:"95030",portalettere:"39"},
   {via:"Roma",da:200,a:299,paese:"Gravina di Catania",cap:"95030",portalettere:"40"},
@@ -263,26 +259,19 @@ const DB_DEFAULT = [
 ];
 let DB = DB_DEFAULT.map(x => ({...x}));
 
-/* ============================================================
-   NUMERI ITALIANI → CIFRE / PAROLE
-   ============================================================ */
 const _U = ["","uno","due","tre","quattro","cinque","sei","sette","otto","nove","dieci","undici","dodici","tredici","quattordici","quindici","sedici","diciassette","diciotto","diciannove"];
 const _T = ["","","venti","trenta","quaranta","cinquanta","sessanta","settanta","ottanta","novanta"];
-function _b100(n){ if (n<20) return _U[n]; const d=Math.floor(n/10),r=n%10; let b=_T[d]; if(r===1||r===8)b=b.slice(0,-1); return b+_U[r]; }
+function _b100(n){ if(n<20)return _U[n]; const d=Math.floor(n/10),r=n%10; let b=_T[d]; if(r===1||r===8)b=b.slice(0,-1); return b+_U[r]; }
 function _var(n){ if(n===0)return["zero"]; if(n<100)return[_b100(n)];
   const h=Math.floor(n/100),r=n%100; const p=(h===1?"cento":_U[h]+"cento");
   if(r===0)return[p]; const out=[];
   for(const v of _var(r)){ out.push(p+v); if(p.endsWith("o")&&v.startsWith("o"))out.push(p.slice(0,-1)+v); }
   return out; }
-const NUM_MAP = {};
-for(let n=0;n<=999;n++) for(const w of _var(n)){ NUM_MAP[w]=String(n); if(w.endsWith("tre")&&w!=="tre")NUM_MAP[w.slice(0,-3)+"tré"]=String(n); }
+const NUM_MAP={};
+for(let n=0;n<=999;n++)for(const w of _var(n)){ NUM_MAP[w]=String(n); if(w.endsWith("tre")&&w!=="tre")NUM_MAP[w.slice(0,-3)+"tré"]=String(n); }
 function replaceNumbers(t){ return t.split(" ").map(x=>NUM_MAP[x]||x).join(" "); }
-function numberToItWords(n){ n=parseInt(n,10); if(isNaN(n)||n<0||n>999)return String(n);
-  let w=_var(n)[0]; if(w.endsWith("tre")&&w!=="tre")w=w.slice(0,-3)+"tré"; return w; }
+function numberToItWords(n){ n=parseInt(n,10); if(isNaN(n)||n<0||n>999)return String(n); let w=_var(n)[0]; if(w.endsWith("tre")&&w!=="tre")w=w.slice(0,-3)+"tré"; return w; }
 
-/* ============================================================
-   DUG / STOPWORDS / SINONIMI / ESPANSIONI PAESE
-   ============================================================ */
 const DUG_WORDS = new Set(["via","viale","vle","vial","viali","piazza","piazzale","piazzetta","piazzett","piaz","piazz","vicolo","vic","vico","vicò","vialetto","vialetti","corso","cso","corsi","largo","lgo","larghi","strada","str","strade","stradella","stradone","stradoni","contrada","contra","contrà","contrade","lungargine","lungadige","lungarno","lungomare","lungolago","lungopo","riviera","circonvallazione","tangenziale","svincolo","rotonda","androna","calle","calletta","callesella","fondamenta","ramo","sotoportego","sotoport","salizada","liston","ruga","galleria","gall","passaggio","pass","traversa","trav","frazione","fraz","loc","localita","località","sottopasso","cavalcavia","passeggiata","belvedere","ta"]);
 const STOPWORDS = new Set(["di","del","della","dei","degli","delle","da","dal","dalla","dai","dagli","dalle","in","a","al","alla","ai","agli","alle","e","ed","la","il","lo","le","gli","l","d","su","sul","sullo","sulla","sui","sugli","sulle","per","con","tra","fra","nel","nello","nella","nei","negli","nelle","un","uno","una"]);
 const SYNONYM_GROUPS = [
@@ -322,9 +311,6 @@ const COUNTRY_EXPANSIONS = {
   "SANT'ELENA":"Sant Elena"
 };
 
-/* ============================================================
-   NORMALIZZAZIONE / TOKENIZZAZIONE
-   ============================================================ */
 function normalize(s){
   return (s||"").toLowerCase().replace(/[''`]/g," ")
     .replace(/[.,;:!?'"()\[\]\/]/g," ").replace(/\s+/g," ").trim();
@@ -361,9 +347,6 @@ function countryToTokens(name){
   return tokenizeNoStop(exp);
 }
 
-/* ============================================================
-   LEVENSHTEIN + SINONIMI
-   ============================================================ */
 function levenshtein(a,b,maxD){
   if (Math.abs(a.length-b.length)>maxD) return maxD+1;
   const m=a.length, n=b.length;
@@ -389,9 +372,6 @@ function tokensMatch(a,b){
 }
 function tokenDistance(a,b,maxD){ return tokensMatch(a,b) ? 0 : levenshtein(a,b,maxD); }
 
-/* ============================================================
-   CACHE
-   ============================================================ */
 let vieUnicheCache=[], paesiUniciCache=[], vieTokenizzate=[], paesiTokenizzati=[];
 function rebuildCaches(){
   const vs=new Set(), ps=new Set();
@@ -402,7 +382,7 @@ function rebuildCaches(){
 }
 
 /* ============================================================
-   FUZZY
+   FUZZY CON FIX: normalizzazione su min(n, m)
    ============================================================ */
 function bestAlignment(tt, ct){
   const n=ct.length, m=tt.length;
@@ -422,11 +402,15 @@ function bestAlignment(tt, ct){
     }
     if (!cons) continue;
     const sim = tl>0 ? 1-td/tl : 0;
-    const adj = sim * (0.5 + 0.5*(cov/m));
+    // FIX: denom = min(n, m) così una via corta (es. MARCONI) non è
+    // penalizzata quando l'input ha più parole (es. "marconi san giorgio bosco")
+    const denom = Math.min(n, m);
+    const adj = sim * (0.5 + 0.5*(cov/denom));
     if (adj>best) best=adj;
   }
   return best;
 }
+
 function findTopMatches(tt, cands, n){
   const sc=[];
   for (const c of cands){
@@ -456,9 +440,6 @@ function fuzzyCorrect(raw){
   return null;
 }
 
-/* ============================================================
-   LOOKUP ESATTO (word-boundary)
-   ============================================================ */
 function containsWord(text, word){
   if (!word) return false;
   let idx = text.indexOf(word);
@@ -471,6 +452,21 @@ function containsWord(text, word){
   }
   return false;
 }
+
+/* ============================================================
+   FIX: containsCountry riconosce le espansioni del paese
+   ============================================================ */
+function containsCountry(text, paese){
+  const normPaese = normalize(paese);
+  if (containsWord(text, normPaese)) return true;
+  const expanded = COUNTRY_EXPANSIONS[paese.toUpperCase()];
+  if (expanded){
+    const normExpanded = normalize(expanded);
+    if (containsWord(text, normExpanded)) return true;
+  }
+  return false;
+}
+
 function lookup(raw){
   if (!raw || !raw.trim()) return {ok:false, message:"Nessun testo."};
   let t = normalize(preprocessAbbreviations(raw));
@@ -480,7 +476,8 @@ function lookup(raw){
     const via = normalize(e.via), paese = normalize(e.paese);
     const k = via+"||"+paese;
     if (seen.has(k)) continue;
-    if (containsWord(t, via) && t.includes(paese)){
+    // FIX: usa containsCountry (riconosce espansioni)
+    if (containsWord(t, via) && containsCountry(t, e.paese)){
       seen.add(k);
       pairs.push({via, paese, score: via.length+paese.length});
     }
@@ -531,9 +528,6 @@ function lookupSmart(raw){
   return ex;
 }
 
-/* ============================================================
-   TTS + BEEP
-   ============================================================ */
 let voices=[];
 function loadVoices(){ if (!("speechSynthesis" in window)) return; voices = window.speechSynthesis.getVoices(); }
 if ("speechSynthesis" in window){ loadVoices(); window.speechSynthesis.onvoiceschanged = loadVoices; }
@@ -576,9 +570,6 @@ function beep(f=800,d=80,vol=.12){
 function beepStart(){ beep(800,70); setTimeout(()=>beep(1100,90),90); }
 function beepStop(){ beep(500,140,.1); }
 
-/* ============================================================
-   STORAGE
-   ============================================================ */
 function hashPwd(s){ let h=5381; for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0; return "h"+Math.abs(h).toString(36); }
 function getPwdHash(){ try{const v=localStorage.getItem(PWD_STORAGE_KEY);if(v)return v;}catch(_){} return hashPwd(ADMIN_PASSWORD_DEFAULT); }
 function setPwdHash(h){ try{localStorage.setItem(PWD_STORAGE_KEY,h);return true;}catch(_){return false;} }
@@ -612,9 +603,6 @@ function recordLog(raw, res, source, fuzzy){
   saveLog(l);
 }
 
-/* ============================================================
-   UI
-   ============================================================ */
 const $=id=>document.getElementById(id);
 const bigNum=$("bigNum"), addrEl=$("addr"), noteEl=$("note"), fzEl=$("fuzzyNote"),
   liveEl=$("live"), statusTextEl=$("statusText"), dotEl=$("dot"),
@@ -644,9 +632,6 @@ function renderResult(res, raw){
   historyEl.innerHTML=history.map(h=>`<li><b>${esc(h.shown)}${h.suf}</b> — ${esc(h.raw)}</li>`).join("")||"<li>Nessuna richiesta.</li>";
 }
 
-/* ============================================================
-   RICONOSCIMENTO VOCALE
-   ============================================================ */
 let rec=null, wantListening=false, speaking=false, processing=false;
 function initRec(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -711,9 +696,6 @@ function toggleMic(){
   }
 }
 
-/* ============================================================
-   CSV
-   ============================================================ */
 function detSep(t){ const f=t.split(/\r?\n/)[0]||''; return (f.split(';').length>f.split(',').length)?';':','; }
 function parseCSV(text){
   if(text.charCodeAt(0)===0xFEFF) text=text.slice(1);
@@ -810,9 +792,6 @@ function loadCSVText(text){
   return {ok:true, count:en.length};
 }
 
-/* ============================================================
-   ADMIN
-   ============================================================ */
 function isUnlocked(){ return sessionStorage.getItem(ADMIN_SESSION_KEY)==="1"; }
 function lockAdmin(){
   sessionStorage.removeItem(ADMIN_SESSION_KEY);
@@ -871,9 +850,6 @@ function tryLogin(){
   }
 }
 
-/* ============================================================
-   BOOT
-   ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
   rebuildCaches();
   rec = initRec();
