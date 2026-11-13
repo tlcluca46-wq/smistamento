@@ -82,7 +82,6 @@
   .history li{padding:8px 0;border-bottom:1px solid #1E4C8A;font-size:.9rem;color:var(--muted)}
   .history li b{color:var(--poste-yellow);font-size:1.05rem}
 
-  /* MODALE ADMIN */
   .modal-overlay{position:fixed;inset:0;background:rgba(0,10,25,.85);
     backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;
     z-index:1000;padding:20px}
@@ -111,7 +110,6 @@
   @keyframes shake{0%,100%{transform:translateX(0)}
     25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
 
-  /* TABS */
   .tabs{display:flex;gap:6px;margin-bottom:16px;border-bottom:2px solid #1E4C8A;
         flex-wrap:wrap}
   .tab{padding:10px 16px;border:none;background:transparent;color:var(--muted);
@@ -123,7 +121,6 @@
   .tab-content{display:none}
   .tab-content.active{display:block}
 
-  /* UPLOAD */
   .upload-box{border:2px dashed #1E5BA8;border-radius:12px;padding:20px;
               text-align:center;cursor:pointer;transition:.15s;
               background:rgba(0,20,40,.4)}
@@ -132,7 +129,6 @@
   .upload-box p{margin:6px 0;color:var(--muted);font-size:.9rem}
   .upload-box strong{color:var(--poste-yellow)}
 
-  /* STATISTICHE */
   .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
               gap:12px;margin:16px 0}
   .stat-card{background:var(--card2);padding:14px;border-radius:12px;
@@ -146,7 +142,6 @@
     border-bottom:1px solid #1E4C8A;font-size:.9rem}
   .stat-list li .cnt{color:var(--poste-yellow);font-weight:700}
 
-  /* LOG */
   .log-table{width:100%;border-collapse:collapse;font-size:.8rem;margin-top:10px}
   .log-table th{text-align:left;padding:6px 4px;color:var(--poste-yellow);
     border-bottom:2px solid #1E4C8A;font-weight:700;font-size:.75rem;
@@ -159,7 +154,6 @@
 
   details summary{cursor:pointer;font-weight:700;color:var(--poste-yellow);padding:4px 0}
 
-  /* FOOTER */
   .app-footer{
     text-align:center;
     padding:22px 16px 32px;
@@ -568,7 +562,12 @@ function replaceNumbers(text){
 function numberToItWords(n){
   n = parseInt(n, 10);
   if (isNaN(n) || n < 0 || n > 999) return String(n);
-  return _variants(n)[0];
+  let word = _variants(n)[0];
+  // Accento su "tre" finale per una pronuncia più naturale (quarantatré, ventitré…)
+  if (word.endsWith("tre") && word !== "tre"){
+    word = word.slice(0, -3) + "tré";
+  }
+  return word;
 }
 
 /* ============================================================
@@ -776,12 +775,22 @@ function pickItalianVoice(){
       || voices.find(v => v.lang && v.lang.toLowerCase().startsWith('it'))
       || null;
 }
-function prepareSpeechText(portalettereArr){
-  const parts = portalettereArr.map(String);
-  const itVoice = pickItalianVoice();
-  if (itVoice) return parts.join(" e ");
-  return parts.map(p => { const n = parseInt(p,10); return isNaN(n) ? p : numberToItWords(n); }).join(" e ");
+
+// Converte un codice casellario in una forma pronunciabile a voce.
+// Esempi: "11-A" -> "undici A" ; "63" -> "sessantatré" ; "24-B" -> "ventiquattro B"
+function codeToSpeech(code){
+  const s = String(code).trim();
+  const m = s.match(/^(\d+)(?:-([A-Za-z]+))?$/);
+  if (!m) return s;
+  const numWord = numberToItWords(parseInt(m[1], 10));
+  const suffix = m[2] ? " " + m[2].toUpperCase() : "";
+  return numWord + suffix;
 }
+
+function prepareSpeechText(portalettereArr){
+  return portalettereArr.map(codeToSpeech).join(" e ");
+}
+
 function speak(text, cb){
   if (!text){ cb && cb(); return; }
   if (!("speechSynthesis" in window)){ cb && cb(); return; }
