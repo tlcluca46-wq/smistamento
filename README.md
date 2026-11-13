@@ -93,7 +93,7 @@ Una voce, un numero, zero errori.
 
 ### 🏠 Interfaccia principale
 
-<img src="docs/screenshot-main.png" alt="Schermata principale di SortVox" width="80%">
+<img src="https://placehold.co/800x450/001F3F/F3D829?text=SortVox%5Cn%5Cn39%5Cn%5Cn(Schermata+Principale)" alt="Schermata principale di SortVox" width="80%" style="border-radius: 12px;">
 
 *Il cuore dell'app: microfono grande, risultato immediato, storico delle ultime richieste.*
 
@@ -101,7 +101,7 @@ Una voce, un numero, zero errori.
 
 ### ⚙️ Pannello amministratore
 
-<img src="docs/screenshot-admin.png" alt="Pannello amministratore" width="80%">
+<img src="https://placehold.co/800x450/001F3F/F3D829?text=SortVox%5Cn%5Cn%5Cn(Schermata+Amministratore)" alt="Pannello amministratore" width="80%" style="border-radius: 12px;">
 
 *Gestione database, statistiche, log e sicurezza in un'unica finestra.*
 
@@ -109,7 +109,7 @@ Una voce, un numero, zero errori.
 
 ### 📊 Statistiche d'uso
 
-<img src="docs/screenshot-stats.png" alt="Statistiche" width="80%">
+<img src="https://placehold.co/800x450/001F3F/F3D829?text=SortVox%5Cn%5Cn%5Cn(Statistiche+di+Utilizzo)" alt="Statistiche" width="80%" style="border-radius: 12px;">
 
 *Quali vie vengono cercate di più? Quali portalettere sono più attivi?*
 
