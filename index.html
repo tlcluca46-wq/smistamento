@@ -4,6 +4,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
 <title>SortVox — Assistente Smistamento Postale</title>
 <meta name="author" content="Luca Americi">
 <meta name="description" content="SortVox — Assistente vocale smistamento postale. Ideato da Luca Americi, Lean Professional presso il Centro Smistamento di Padova.">
@@ -328,11 +329,6 @@ function preprocessAbbreviations(s){
     .replace(/\bpass\.?\b/gi,"passaggio");
 }
 
-/* ============================================================
-   FIX 1: tokenizeNoStop con parametro dropSingle
-   - Vie: dropSingle=true  → "ALFIERI V." diventa ["alfieri"]
-   - Paesi: dropSingle=false → "BORGO V." resta ["borgo","v"] per sinonimi
-   ============================================================ */
 function tokenizeNoStop(s, opts){
   const dropSingle = !opts || opts.dropSingle !== false;
   const pre = preprocessAbbreviations(s);
@@ -379,23 +375,14 @@ function rebuildCaches(){
   const vs=new Set(), ps=new Set();
   for (const e of DB){ vs.add(e.via); ps.add(e.paese); }
   vieUnicheCache=[...vs]; paesiUniciCache=[...ps];
-  // VIE: dropSingle=true (le iniziali V., T., F. vengono ignorate)
   vieTokenizzate = vieUnicheCache
     .map(v=>({orig:v, tokens: tokenizeNoStop(v, {dropSingle:true})}))
     .filter(x=>x.tokens.length>0);
-  // PAESI: mantieni singoli per gestire "Borgo V." → "Borgo Veneto"
   paesiTokenizzati = paesiUniciCache
     .map(p=>({orig:p, tokens: countryToTokens(p)}))
     .filter(x=>x.tokens.length>0);
 }
 
-/* ============================================================
-   FIX 2: bestAlignment con bonus offset decrescente
-   - Offset 0 (prima parola): ×1.25
-   - Offset 1: ×1.15
-   - Offset ≥2: ×1.05
-   Così "SPERI SAN MARTINO..." preferisce SPERI (offset 0) a SANTO (offset 1)
-   ============================================================ */
 function bestAlignment(tt, ct){
   const n=ct.length, m=tt.length;
   if (!n||!m) return 0;
