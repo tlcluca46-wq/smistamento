@@ -157,7 +157,6 @@ button:active{transform:scale(.97)}
         <button class="mic" id="submitLogin" style="min-width:auto;padding:14px 24px;">Accedi</button>
       </div>
     </div>
-
     <div id="panelView" style="display:none;">
       <h2>⚙️ Pannello amministratore</h2>
       <div class="tabs">
@@ -166,7 +165,6 @@ button:active{transform:scale(.97)}
         <button class="tab" data-tab="log">Log ricerche</button>
         <button class="tab" data-tab="security">Sicurezza</button>
       </div>
-
       <div class="tc active" id="tab-db">
         <p class="warn">Formato: <code>via,civico_da,civico_a,paese,cap,portalettere</code><br>
         Lasciare <code>civico_da</code> e <code>civico_a</code> vuoti = via coperta interamente.<br>
@@ -185,7 +183,6 @@ button:active{transform:scale(.97)}
         </div>
         <div class="status" id="csvStatus" style="margin-top:12px;"></div>
       </div>
-
       <div class="tc" id="tab-stats">
         <div class="sg">
           <div class="sc"><div class="sl">Ricerche totali</div><div class="sv" id="statTotale">0</div></div>
@@ -198,7 +195,6 @@ button:active{transform:scale(.97)}
         <h3>Top 10 portalettere</h3><ul class="sl-list" id="statPl"><li><em>Nessun dato.</em></li></ul>
         <div class="row"><button class="danger" id="resetStatsBtn">🗑️ Azzera statistiche</button></div>
       </div>
-
       <div class="tc" id="tab-log">
         <p style="color:var(--m);font-size:.9rem;">Ultime 50 ricerche (max 1000 conservate).</p>
         <div style="max-height:400px;overflow-y:auto;">
@@ -212,7 +208,6 @@ button:active{transform:scale(.97)}
           <button class="danger" id="resetLogBtn">🗑️ Cancella log</button>
         </div>
       </div>
-
       <div class="tc" id="tab-security">
         <h3>Cambia password amministratore</h3>
         <p style="color:var(--m);font-size:.9rem;">Salvata localmente nel browser. Minimo 4 caratteri.</p>
@@ -226,7 +221,6 @@ button:active{transform:scale(.97)}
         <p style="color:var(--m);font-size:.9rem;">Riporta la password a <code>123456</code>.</p>
         <div class="row"><button class="ghost" id="resetPwdBtn">↺ Ripristina a 123456</button></div>
       </div>
-
       <div class="ma" style="margin-top:24px;">
         <button class="ghost" id="logoutBtn">🔒 Blocca</button>
         <button class="mic" id="closePanelBtn" style="min-width:auto;padding:14px 24px;">Chiudi</button>
@@ -381,9 +375,7 @@ function rebuildCaches(){
   paesiTokenizzati = paesiUniciCache.map(p=>({orig:p,tokens:countryToTokens(p)})).filter(x=>x.tokens.length>0);
 }
 
-/* ============================================================
-   FUZZY CON FIX: normalizzazione su min(n, m)
-   ============================================================ */
+/* FIX 1: bonus prefisso iniziale */
 function bestAlignment(tt, ct){
   const n=ct.length, m=tt.length;
   if (!n||!m) return 0;
@@ -402,10 +394,16 @@ function bestAlignment(tt, ct){
     }
     if (!cons) continue;
     const sim = tl>0 ? 1-td/tl : 0;
-    // FIX: denom = min(n, m) così una via corta (es. MARCONI) non è
-    // penalizzata quando l'input ha più parole (es. "marconi san giorgio bosco")
     const denom = Math.min(n, m);
-    const adj = sim * (0.5 + 0.5*(cov/denom));
+    let adj = sim * (0.5 + 0.5*(cov/denom));
+    // Bonus se il primo token della cand matcha il primo token allineato
+    const ti0 = off;
+    if (ti0 >= 0 && ti0 < m){
+      const c0 = ct[0], t0 = tt[ti0];
+      const ml0 = Math.max(c0.length, t0.length);
+      const md0 = Math.max(1, Math.floor(ml0/3));
+      if (tokenDistance(t0, c0, md0) <= md0) adj *= 1.15;
+    }
     if (adj>best) best=adj;
   }
   return best;
@@ -421,6 +419,8 @@ function findTopMatches(tt, cands, n){
   sc.sort((a,b)=>b.sim-a.sim);
   return sc.slice(0,n);
 }
+
+/* FIX 2: retry con espansione del paese */
 function fuzzyCorrect(raw){
   let t = replaceNumbers(normalize(raw));
   const tok = t.split(" ").filter(Boolean);
@@ -433,9 +433,16 @@ function fuzzyCorrect(raw){
   const civ = civM ? civM[1] : "";
   for (const v of topV) for (const p of topP){
     const corr = [v.match, civ, p.match].filter(Boolean).join(" ");
-    const r = lookup(corr);
+    let r = lookup(corr);
     if (r.ok) return {text:corr, result:r, via:v.match, paese:p.match,
       civico:civ?parseInt(civ,10):null, sim:(v.sim+p.sim)/2};
+    const exp = COUNTRY_EXPANSIONS[p.match.toUpperCase()];
+    if (exp){
+      const corr2 = [v.match, civ, exp].filter(Boolean).join(" ");
+      r = lookup(corr2);
+      if (r.ok) return {text:corr2, result:r, via:v.match, paese:p.match,
+        civico:civ?parseInt(civ,10):null, sim:(v.sim+p.sim)/2};
+    }
   }
   return null;
 }
@@ -452,17 +459,12 @@ function containsWord(text, word){
   }
   return false;
 }
-
-/* ============================================================
-   FIX: containsCountry riconosce le espansioni del paese
-   ============================================================ */
 function containsCountry(text, paese){
   const normPaese = normalize(paese);
   if (containsWord(text, normPaese)) return true;
   const expanded = COUNTRY_EXPANSIONS[paese.toUpperCase()];
   if (expanded){
-    const normExpanded = normalize(expanded);
-    if (containsWord(text, normExpanded)) return true;
+    if (containsWord(text, normalize(expanded))) return true;
   }
   return false;
 }
@@ -476,7 +478,6 @@ function lookup(raw){
     const via = normalize(e.via), paese = normalize(e.paese);
     const k = via+"||"+paese;
     if (seen.has(k)) continue;
-    // FIX: usa containsCountry (riconosce espansioni)
     if (containsWord(t, via) && containsCountry(t, e.paese)){
       seen.add(k);
       pairs.push({via, paese, score: via.length+paese.length});
@@ -489,12 +490,10 @@ function lookup(raw){
   const after = t.slice(vi + top.via.length);
   const mm = after.match(/\b(\d{1,4})\b/);
   const civico = mm ? parseInt(mm[1],10) : null;
-
   const entries = DB.filter(e => normalize(e.via)===top.via && normalize(e.paese)===top.paese);
   const dV = entries[0].via, dP = entries[0].paese, dC = entries[0].cap;
   const gen = entries.filter(e => e.da==null && e.a==null);
   const spec = entries.filter(e => e.da!=null && e.a!=null);
-
   if (civico === null){
     if (gen.length===1 && spec.length===0)
       return {ok:true, portalettere:[gen[0].portalettere], via:dV, paese:dP, cap:dC, civico:null,
@@ -854,7 +853,6 @@ document.addEventListener("DOMContentLoaded", () => {
   rebuildCaches();
   rec = initRec();
   if (!rec){ setDot('error'); setStatus("⚠️ Riconoscimento vocale non supportato."); }
-
   micBtn.addEventListener("click", toggleMic);
   $("manualInput").addEventListener("keydown", e => {
     if(e.key==="Enter"){ const v=e.target.value.trim(); if(!v) return; handle(v,'manual'); e.target.value=""; }
