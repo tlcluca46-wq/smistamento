@@ -93,7 +93,7 @@ Una voce, un numero, zero errori.
 
 ### 🏠 Interfaccia principale
 
-<img src="https://placehold.co/800x450/001F3F/F3D829?text=SortVox%5Cn%5Cn39%5Cn%5Cn(Schermata+Principale)" alt="Schermata principale di SortVox" width="80%" style="border-radius: 12px;">
+<img src="https://placehold.co/800x450/001F3F/F3D829?text=SortVox%5Cn%5Cn%5CnInterfaccia+Principale%5Cn%5Cn(39)" alt="Schermata principale di SortVox" width="80%" style="border-radius: 12px;">
 
 *Il cuore dell'app: microfono grande, risultato immediato, storico delle ultime richieste.*
 
@@ -101,7 +101,7 @@ Una voce, un numero, zero errori.
 
 ### ⚙️ Pannello amministratore
 
-<img src="https://placehold.co/800x450/001F3F/F3D829?text=SortVox%5Cn%5Cn%5Cn(Schermata+Amministratore)" alt="Pannello amministratore" width="80%" style="border-radius: 12px;">
+<img src="https://placehold.co/800x450/001F3F/F3D829?text=SortVox%5Cn%5Cn%5CnPannello+Amministratore" alt="Pannello amministratore" width="80%" style="border-radius: 12px;">
 
 *Gestione database, statistiche, log e sicurezza in un'unica finestra.*
 
@@ -109,13 +109,13 @@ Una voce, un numero, zero errori.
 
 ### 📊 Statistiche d'uso
 
-<img src="https://placehold.co/800x450/001F3F/F3D829?text=SortVox%5Cn%5Cn%5Cn(Statistiche+di+Utilizzo)" alt="Statistiche" width="80%" style="border-radius: 12px;">
+<img src="https://placehold.co/800x450/001F3F/F3D829?text=SortVox%5Cn%5Cn%5CnStatistiche+di+Utilizzo" alt="Statistiche" width="80%" style="border-radius: 12px;">
 
 *Quali vie vengono cercate di più? Quali portalettere sono più attivi?*
 
 </div>
 
-> 💡 **Nota per chi clona il repo**: crea una cartella `docs/` e metti lì gli screenshot con i nomi `screenshot-main.png`, `screenshot-admin.png`, `screenshot-stats.png`. Se non li metti, il README funziona lo stesso ma le immagini non si vedono.
+> 💡 **Nota per chi clona il repo**: questi sono segnaposto. Per inserire gli screenshot reali, crea una cartella `docs/` nel repository, carica le immagini `screenshot-main.png`, `screenshot-admin.png`, `screenshot-stats.png` e sostituisci i link `src="https://placehold.co/..."` con `src="docs/screenshot-main.png"`.
 
 ---
 
