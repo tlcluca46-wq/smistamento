@@ -1,155 +1,111 @@
-<!--
-  SortVox — Assistente Smistamento Postale
-  © 2026 Luca Americi — Tutti i diritti riservati
-  Lean Professional presso il Centro Smistamento di Padova
--->
+<!-- SortVox © 2026 Luca Americi — Lean Professional Centro Smistamento Padova -->
 <!DOCTYPE html>
 <html lang="it">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SortVox — Assistente Smistamento Postale</title>
 <meta name="author" content="Luca Americi">
-<meta name="description" content="SortVox — Assistente vocale per lo smistamento postale. Ideato da Luca Americi, Lean Professional presso il Centro Smistamento di Padova.">
+<meta name="description" content="SortVox — Assistente vocale smistamento postale. Ideato da Luca Americi, Lean Professional presso il Centro Smistamento di Padova.">
 <style>
-  :root{--poste-yellow:#F3D829;--poste-blue:#0050B9;--poste-blue-dark:#003B8A;
-    --bg:#001F3F;--card:#002B5C;--card2:#003A7A;--ok:#2ECC71;--err:#E74C3C;
-    --txt:#EAF0F6;--muted:#8FA3B8}
-  *{box-sizing:border-box}
-  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-       background:var(--bg);color:var(--txt);min-height:100vh}
-  header{background:var(--poste-yellow);padding:14px 22px;display:flex;align-items:center;
-    justify-content:space-between;gap:16px;box-shadow:0 4px 14px rgba(0,0,0,.35);flex-wrap:wrap}
-  .logo-wrap{display:flex;align-items:center;gap:14px}
-  .logo-wrap img{height:44px;width:auto;display:block}
-  .logo-wrap .app-name{font-weight:800;font-size:1.1rem;color:var(--poste-blue-dark)}
-  .header-right{display:flex;align-items:center;gap:10px}
-  .header-state{font-weight:700;font-size:.8rem;text-transform:uppercase;letter-spacing:1.2px;
-    color:var(--poste-blue-dark);background:rgba(255,255,255,.45);padding:6px 12px;border-radius:999px}
-  .admin-btn{background:var(--poste-blue-dark);color:#fff;border:none;padding:8px 14px;
-    border-radius:999px;font:inherit;font-weight:700;font-size:.8rem;cursor:pointer;
-    letter-spacing:.5px;transition:.15s}
-  .admin-btn:hover{background:var(--poste-blue)}
-  main{max-width:860px;margin:0 auto;padding:22px}
-  .card{background:var(--card);border-radius:16px;padding:20px;margin-bottom:16px;
-    box-shadow:0 6px 20px rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.06)}
-  .result{display:flex;align-items:center;gap:24px;flex-wrap:wrap}
-  .big{flex:0 0 auto;min-width:170px;text-align:center;background:var(--poste-blue-dark);
-    border-radius:16px;padding:14px 22px;border:2px solid var(--poste-yellow)}
-  .big .label{font-size:.75rem;letter-spacing:2px;color:var(--poste-yellow);
-    text-transform:uppercase;font-weight:700}
-  .big .num{font-size:4.2rem;font-weight:900;color:var(--poste-yellow);
-    line-height:1;margin-top:6px;text-shadow:0 2px 8px rgba(0,0,0,.4)}
-  .details{flex:1 1 260px}
-  .details .addr{font-size:1.35rem;font-weight:700;line-height:1.3}
-  .details .note{color:var(--muted);margin-top:6px;font-size:.95rem}
-  .fuzzy-note{color:#FFCC66;font-size:.85rem;margin-top:6px}
-  .controls{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
-  button{font:inherit;border:none;border-radius:12px;padding:14px 20px;cursor:pointer;
-    font-weight:700;transition:.15s;font-size:1rem}
-  button:active{transform:scale(.97)}
-  .mic{background:var(--poste-yellow);color:var(--poste-blue-dark);min-width:250px;
-    display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 4px 0 #B8A200}
-  .mic.on{background:var(--err);color:#fff;box-shadow:0 4px 0 #A93226;animation:pulse 1.6s infinite}
-  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(231,76,60,.7),0 4px 0 #A93226}
-    50%{box-shadow:0 0 0 14px rgba(231,76,60,0),0 4px 0 #A93226}}
-  .ghost{background:var(--card2);color:var(--txt);border:1px solid #1E5BA8}
-  .ghost:hover{background:#00468F}
-  .danger{background:#A93226;color:#fff}
-  .danger:hover{background:#7B241C}
-  .dot{width:14px;height:14px;border-radius:50%;background:#445;display:inline-block;
-    vertical-align:middle;margin-right:8px;transition:.2s}
-  .dot.listening{background:var(--ok);box-shadow:0 0 12px var(--ok)}
-  .dot.speaking{background:var(--poste-yellow);box-shadow:0 0 12px var(--poste-yellow)}
-  .dot.error{background:var(--err)}
-  .status{color:var(--muted);font-size:.9rem;display:flex;align-items:center}
-  .manual{display:flex;gap:10px;margin-top:6px}
-  .manual input{flex:1;font:inherit;padding:14px 16px;border-radius:12px;
-    border:2px solid #1E5BA8;background:var(--card2);color:var(--txt);font-size:1.05rem}
-  .manual input::placeholder{color:#7C93AE}
-  .manual input:focus{outline:none;border-color:var(--poste-yellow)}
-  .live{margin-top:10px;color:var(--muted);font-style:italic;min-height:1.4em}
-  .live b{color:var(--txt);font-style:normal}
-  .history{list-style:none;padding:0;margin:0}
-  .history li{padding:8px 0;border-bottom:1px solid #1E4C8A;font-size:.9rem;color:var(--muted)}
-  .history li b{color:var(--poste-yellow);font-size:1.05rem}
-  .modal-overlay{position:fixed;inset:0;background:rgba(0,10,25,.85);backdrop-filter:blur(6px);
-    display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
-  .modal-overlay.open{display:flex}
-  .modal{background:var(--card);border-radius:18px;padding:26px;width:100%;max-width:820px;
-    max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.6);
-    border:1px solid rgba(243,216,41,.3)}
-  .modal h2{margin:0 0 16px 0;font-size:1.25rem;color:var(--poste-yellow);
-    display:flex;align-items:center;gap:10px}
-  .modal h3{margin:18px 0 10px 0;font-size:1rem;color:var(--poste-yellow)}
-  .modal input[type="password"],.modal input[type="text"]{width:100%;font:inherit;
-    padding:14px 16px;border-radius:12px;border:2px solid #1E5BA8;
-    background:var(--card2);color:var(--txt);font-size:1.05rem}
-  .modal input[type="password"]{letter-spacing:2px}
-  .modal input:focus{outline:none;border-color:var(--poste-yellow)}
-  .modal-actions{display:flex;gap:12px;margin-top:18px;justify-content:flex-end;flex-wrap:wrap}
-  .modal textarea{width:100%;min-height:180px;margin-top:10px;background:#001428;
-    color:var(--txt);border:1px solid #1E5BA8;border-radius:10px;padding:10px;
-    font-family:ui-monospace,monospace;font-size:.85rem}
-  .modal .warn{color:#FFCC66;font-size:.85rem;margin-top:8px}
-  .modal .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
-  .login-error{color:var(--err);font-weight:700;margin-top:12px;min-height:1.3em;font-size:.9rem}
-  .shake{animation:shake .4s}
-  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}
-    75%{transform:translateX(8px)}}
-  .tabs{display:flex;gap:6px;margin-bottom:16px;border-bottom:2px solid #1E4C8A;flex-wrap:wrap}
-  .tab{padding:10px 16px;border:none;background:transparent;color:var(--muted);
-    font-weight:700;cursor:pointer;border-radius:8px 8px 0 0;border-bottom:3px solid transparent;
-    margin-bottom:-2px;font-size:.9rem}
-  .tab:hover{color:var(--txt)}
-  .tab.active{color:var(--poste-yellow);border-bottom-color:var(--poste-yellow);
-    background:rgba(243,216,41,.08)}
-  .tab-content{display:none}
-  .tab-content.active{display:block}
-  .upload-box{border:2px dashed #1E5BA8;border-radius:12px;padding:20px;text-align:center;
-    cursor:pointer;transition:.15s;background:rgba(0,20,40,.4)}
-  .upload-box:hover,.upload-box.dragover{border-color:var(--poste-yellow);
-    background:rgba(243,216,41,.08)}
-  .upload-box p{margin:6px 0;color:var(--muted);font-size:.9rem}
-  .upload-box strong{color:var(--poste-yellow)}
-  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-    gap:12px;margin:16px 0}
-  .stat-card{background:var(--card2);padding:14px;border-radius:12px;border:1px solid #1E5BA8}
-  .stat-card .stat-label{color:var(--muted);font-size:.75rem;text-transform:uppercase;
-    letter-spacing:1px}
-  .stat-card .stat-value{font-size:1.8rem;font-weight:900;color:var(--poste-yellow);margin-top:4px}
-  .stat-list{list-style:none;padding:0;margin:0}
-  .stat-list li{display:flex;justify-content:space-between;padding:6px 0;
-    border-bottom:1px solid #1E4C8A;font-size:.9rem}
-  .stat-list li .cnt{color:var(--poste-yellow);font-weight:700}
-  .log-table{width:100%;border-collapse:collapse;font-size:.8rem;margin-top:10px}
-  .log-table th{text-align:left;padding:6px 4px;color:var(--poste-yellow);
-    border-bottom:2px solid #1E4C8A;font-weight:700;font-size:.75rem;
-    text-transform:uppercase;letter-spacing:.5px}
-  .log-table td{padding:5px 4px;border-bottom:1px solid #0F2B50;color:var(--txt)}
-  .log-table tr:hover td{background:rgba(243,216,41,.04)}
-  .log-ok{color:var(--ok);font-weight:700}
-  .log-ko{color:var(--err);font-weight:700}
-  .log-fuzzy{color:#FFCC66;font-size:.75rem}
-  details summary{cursor:pointer;font-weight:700;color:var(--poste-yellow);padding:4px 0}
-  .app-footer{text-align:center;padding:22px 16px 32px;color:var(--muted);font-size:.8rem;
-    line-height:1.6;border-top:1px solid rgba(255,255,255,.06);margin-top:20px}
-  .app-footer strong{color:var(--poste-yellow);font-weight:700}
+:root{--y:#F3D829;--b:#0050B9;--bd:#003B8A;--bg:#001F3F;--c:#002B5C;--c2:#003A7A;--ok:#2ECC71;--err:#E74C3C;--t:#EAF0F6;--m:#8FA3B8}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--t);min-height:100vh}
+header{background:var(--y);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px;box-shadow:0 4px 14px rgba(0,0,0,.35);flex-wrap:wrap}
+.lw{display:flex;align-items:center;gap:14px}
+.lw img{height:44px;width:auto;display:block}
+.lw .an{font-weight:800;font-size:1.1rem;color:var(--bd)}
+.hr{display:flex;align-items:center;gap:10px}
+.hs{font-weight:700;font-size:.8rem;text-transform:uppercase;letter-spacing:1.2px;color:var(--bd);background:rgba(255,255,255,.45);padding:6px 12px;border-radius:999px}
+.ab{background:var(--bd);color:#fff;border:none;padding:8px 14px;border-radius:999px;font:inherit;font-weight:700;font-size:.8rem;cursor:pointer}
+.ab:hover{background:var(--b)}
+main{max-width:860px;margin:0 auto;padding:22px}
+.card{background:var(--c);border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 6px 20px rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.06)}
+.result{display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.big{flex:0 0 auto;min-width:170px;text-align:center;background:var(--bd);border-radius:16px;padding:14px 22px;border:2px solid var(--y)}
+.big .label{font-size:.75rem;letter-spacing:2px;color:var(--y);text-transform:uppercase;font-weight:700}
+.big .num{font-size:4.2rem;font-weight:900;color:var(--y);line-height:1;margin-top:6px;text-shadow:0 2px 8px rgba(0,0,0,.4)}
+.details{flex:1 1 260px}
+.details .addr{font-size:1.35rem;font-weight:700;line-height:1.3}
+.details .note{color:var(--m);margin-top:6px;font-size:.95rem}
+.fz{color:#FFCC66;font-size:.85rem;margin-top:6px}
+.controls{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+button{font:inherit;border:none;border-radius:12px;padding:14px 20px;cursor:pointer;font-weight:700;transition:.15s;font-size:1rem}
+button:active{transform:scale(.97)}
+.mic{background:var(--y);color:var(--bd);min-width:250px;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 4px 0 #B8A200}
+.mic.on{background:var(--err);color:#fff;box-shadow:0 4px 0 #A93226;animation:pulse 1.6s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(231,76,60,.7),0 4px 0 #A93226}50%{box-shadow:0 0 0 14px rgba(231,76,60,0),0 4px 0 #A93226}}
+.ghost{background:var(--c2);color:var(--t);border:1px solid #1E5BA8}
+.ghost:hover{background:#00468F}
+.danger{background:#A93226;color:#fff}
+.dot{width:14px;height:14px;border-radius:50%;background:#445;display:inline-block;vertical-align:middle;margin-right:8px;transition:.2s}
+.dot.listening{background:var(--ok);box-shadow:0 0 12px var(--ok)}
+.dot.speaking{background:var(--y);box-shadow:0 0 12px var(--y)}
+.dot.error{background:var(--err)}
+.status{color:var(--m);font-size:.9rem;display:flex;align-items:center}
+.manual{display:flex;gap:10px;margin-top:6px}
+.manual input{flex:1;font:inherit;padding:14px 16px;border-radius:12px;border:2px solid #1E5BA8;background:var(--c2);color:var(--t);font-size:1.05rem}
+.manual input::placeholder{color:#7C93AE}
+.manual input:focus{outline:none;border-color:var(--y)}
+.live{margin-top:10px;color:var(--m);font-style:italic;min-height:1.4em}
+.live b{color:var(--t);font-style:normal}
+.history{list-style:none;padding:0;margin:0}
+.history li{padding:8px 0;border-bottom:1px solid #1E4C8A;font-size:.9rem;color:var(--m)}
+.history li b{color:var(--y);font-size:1.05rem}
+.mo{position:fixed;inset:0;background:rgba(0,10,25,.85);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
+.mo.open{display:flex}
+.modal{background:var(--c);border-radius:18px;padding:26px;width:100%;max-width:820px;max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.6);border:1px solid rgba(243,216,41,.3)}
+.modal h2{margin:0 0 16px 0;font-size:1.25rem;color:var(--y);display:flex;align-items:center;gap:10px}
+.modal h3{margin:18px 0 10px 0;font-size:1rem;color:var(--y)}
+.modal input[type=password],.modal input[type=text]{width:100%;font:inherit;padding:14px 16px;border-radius:12px;border:2px solid #1E5BA8;background:var(--c2);color:var(--t);font-size:1.05rem}
+.modal input[type=password]{letter-spacing:2px}
+.modal input:focus{outline:none;border-color:var(--y)}
+.ma{display:flex;gap:12px;margin-top:18px;justify-content:flex-end;flex-wrap:wrap}
+.modal textarea{width:100%;min-height:180px;margin-top:10px;background:#001428;color:var(--t);border:1px solid #1E5BA8;border-radius:10px;padding:10px;font-family:ui-monospace,monospace;font-size:.85rem}
+.modal .warn{color:#FFCC66;font-size:.85rem;margin-top:8px}
+.modal .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.le{color:var(--err);font-weight:700;margin-top:12px;min-height:1.3em;font-size:.9rem}
+.shake{animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.tabs{display:flex;gap:6px;margin-bottom:16px;border-bottom:2px solid #1E4C8A;flex-wrap:wrap}
+.tab{padding:10px 16px;border:none;background:transparent;color:var(--m);font-weight:700;cursor:pointer;border-radius:8px 8px 0 0;border-bottom:3px solid transparent;margin-bottom:-2px;font-size:.9rem}
+.tab.active{color:var(--y);border-bottom-color:var(--y);background:rgba(243,216,41,.08)}
+.tc{display:none}
+.tc.active{display:block}
+.ub{border:2px dashed #1E5BA8;border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:.15s;background:rgba(0,20,40,.4)}
+.ub:hover,.ub.dragover{border-color:var(--y);background:rgba(243,216,41,.08)}
+.ub p{margin:6px 0;color:var(--m);font-size:.9rem}
+.ub strong{color:var(--y)}
+.sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:16px 0}
+.sc{background:var(--c2);padding:14px;border-radius:12px;border:1px solid #1E5BA8}
+.sc .sl{color:var(--m);font-size:.75rem;text-transform:uppercase;letter-spacing:1px}
+.sc .sv{font-size:1.8rem;font-weight:900;color:var(--y);margin-top:4px}
+.sl-list{list-style:none;padding:0;margin:0}
+.sl-list li{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #1E4C8A;font-size:.9rem}
+.sl-list li .cnt{color:var(--y);font-weight:700}
+.lt{width:100%;border-collapse:collapse;font-size:.8rem;margin-top:10px}
+.lt th{text-align:left;padding:6px 4px;color:var(--y);border-bottom:2px solid #1E4C8A;font-weight:700;font-size:.75rem;text-transform:uppercase}
+.lt td{padding:5px 4px;border-bottom:1px solid #0F2B50;color:var(--t)}
+.lok{color:var(--ok);font-weight:700}
+.lko{color:var(--err);font-weight:700}
+.lfz{color:#FFCC66;font-size:.75rem}
+.af{text-align:center;padding:22px 16px 32px;color:var(--m);font-size:.8rem;line-height:1.6;border-top:1px solid rgba(255,255,255,.06);margin-top:20px}
+.af strong{color:var(--y);font-weight:700}
 </style>
 </head>
 <body>
 
 <header>
-  <div class="logo-wrap">
+  <div class="lw">
     <img src="https://upload.wikimedia.org/wikipedia/commons/2/2c/Logo_Poste_Italiane.svg"
          alt="Poste Italiane"
-         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-    <span class="app-name" style="display:none;">POSTE ITALIANE</span>
-    <span class="app-name">SortVox</span>
+         onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+    <span class="an" style="display:none;">POSTE ITALIANE</span>
+    <span class="an">SortVox</span>
   </div>
-  <div class="header-right">
-    <span class="header-state" id="headerState">inattivo</span>
-    <button class="admin-btn" id="adminBtn">🔒 Admin</button>
+  <div class="hr">
+    <span class="hs" id="headerState">inattivo</span>
+    <button class="ab" id="adminBtn">🔒 Admin</button>
   </div>
 </header>
 
@@ -162,16 +118,14 @@
     <div class="details">
       <div class="addr" id="addr">In attesa di un comando…</div>
       <div class="note" id="note">Clicca il microfono una volta: resterà in ascolto fino a quando non lo fermi.</div>
-      <div class="fuzzy-note" id="fuzzyNote" style="display:none"></div>
+      <div class="fz" id="fuzzyNote" style="display:none"></div>
     </div>
   </div>
 
   <div class="card">
     <div class="controls">
       <button class="mic" id="micBtn">🎙️ Attiva microfono</button>
-      <span class="status" id="status">
-        <span class="dot" id="dot"></span><span id="statusText">Microfono spento</span>
-      </span>
+      <span class="status" id="status"><span class="dot" id="dot"></span><span id="statusText">Microfono spento</span></span>
     </div>
     <div class="live" id="live"></div>
     <div class="manual" style="margin-top:16px">
@@ -186,24 +140,19 @@
   </div>
 </main>
 
-<footer class="app-footer">
+<footer class="af">
   <div>© 2026 <strong>SortVox</strong> — Tutti i diritti riservati</div>
-  <div style="margin-top:6px;">
-    Ideato e sviluppato da <strong>Luca Americi</strong><br>
-    Lean Professional presso il Centro Smistamento di Padova
-  </div>
+  <div style="margin-top:6px;">Ideato e sviluppato da <strong>Luca Americi</strong><br>Lean Professional presso il Centro Smistamento di Padova</div>
 </footer>
 
-<div class="modal-overlay" id="adminModal">
+<div class="mo" id="adminModal">
   <div class="modal" id="adminBox">
     <div id="loginView">
       <h2>🔒 Accesso amministratore</h2>
-      <p style="color:var(--muted);font-size:.9rem;margin:0 0 14px 0;">
-        La gestione del database è riservata. Inserisci la password per accedere.
-      </p>
+      <p style="color:var(--m);font-size:.9rem;margin:0 0 14px 0;">La gestione del database è riservata. Inserisci la password.</p>
       <input type="password" id="adminPass" placeholder="Password" autocomplete="off">
-      <div class="login-error" id="loginError"></div>
-      <div class="modal-actions">
+      <div class="le" id="loginError"></div>
+      <div class="ma">
         <button class="ghost" id="cancelLogin">Annulla</button>
         <button class="mic" id="submitLogin" style="min-width:auto;padding:14px 24px;">Accedi</button>
       </div>
@@ -218,15 +167,13 @@
         <button class="tab" data-tab="security">Sicurezza</button>
       </div>
 
-      <div class="tab-content active" id="tab-db">
-        <p class="warn">
-          Formato: <code>via,civico_da,civico_a,paese,cap,portalettere</code><br>
-          Lasciare <code>civico_da</code> e <code>civico_a</code> vuoti = via coperta interamente.<br>
-          Accetta virgola o punto-e-virgola. Intestazione facoltativa.
-        </p>
-        <div class="upload-box" id="uploadBox">
+      <div class="tc active" id="tab-db">
+        <p class="warn">Formato: <code>via,civico_da,civico_a,paese,cap,portalettere</code><br>
+        Lasciare <code>civico_da</code> e <code>civico_a</code> vuoti = via coperta interamente.<br>
+        Accetta virgola o punto-e-virgola. Intestazione facoltativa.</p>
+        <div class="ub" id="uploadBox">
           <p><strong>📁 Trascina qui il file CSV</strong></p>
-          <p>oppure clicca per selezionarlo dal computer</p>
+          <p>oppure clicca per selezionarlo</p>
           <input type="file" id="fileInput" accept=".csv,text/csv" style="display:none">
         </div>
         <textarea id="csvArea" placeholder="Oppure incolla qui il CSV…"></textarea>
@@ -239,64 +186,48 @@
         <div class="status" id="csvStatus" style="margin-top:12px;"></div>
       </div>
 
-      <div class="tab-content" id="tab-stats">
-        <div class="stats-grid">
-          <div class="stat-card"><div class="stat-label">Ricerche totali</div><div class="stat-value" id="statTotale">0</div></div>
-          <div class="stat-card"><div class="stat-label">Oggi</div><div class="stat-value" id="statOggi">0</div></div>
-          <div class="stat-card"><div class="stat-label">Match rate</div><div class="stat-value" id="statMatch">–</div></div>
-          <div class="stat-card"><div class="stat-label">Correzioni fuzzy</div><div class="stat-value" id="statFuzzy">0</div></div>
+      <div class="tc" id="tab-stats">
+        <div class="sg">
+          <div class="sc"><div class="sl">Ricerche totali</div><div class="sv" id="statTotale">0</div></div>
+          <div class="sc"><div class="sl">Oggi</div><div class="sv" id="statOggi">0</div></div>
+          <div class="sc"><div class="sl">Match rate</div><div class="sv" id="statMatch">–</div></div>
+          <div class="sc"><div class="sl">Correzioni fuzzy</div><div class="sv" id="statFuzzy">0</div></div>
         </div>
-        <h3>Top 10 vie più cercate</h3>
-        <ul class="stat-list" id="statVie"><li><em>Nessun dato.</em></li></ul>
-        <h3>Top 10 comuni</h3>
-        <ul class="stat-list" id="statPaesi"><li><em>Nessun dato.</em></li></ul>
-        <h3>Top 10 portalettere</h3>
-        <ul class="stat-list" id="statPl"><li><em>Nessun dato.</em></li></ul>
+        <h3>Top 10 vie</h3><ul class="sl-list" id="statVie"><li><em>Nessun dato.</em></li></ul>
+        <h3>Top 10 comuni</h3><ul class="sl-list" id="statPaesi"><li><em>Nessun dato.</em></li></ul>
+        <h3>Top 10 portalettere</h3><ul class="sl-list" id="statPl"><li><em>Nessun dato.</em></li></ul>
         <div class="row"><button class="danger" id="resetStatsBtn">🗑️ Azzera statistiche</button></div>
       </div>
 
-      <div class="tab-content" id="tab-log">
-        <p style="color:var(--muted);font-size:.9rem;">Ultime 50 ricerche (su un massimo di 1000 conservate nel browser).</p>
+      <div class="tc" id="tab-log">
+        <p style="color:var(--m);font-size:.9rem;">Ultime 50 ricerche (max 1000 conservate).</p>
         <div style="max-height:400px;overflow-y:auto;">
-          <table class="log-table" id="logTable">
+          <table class="lt" id="logTable">
             <thead><tr><th>Ora</th><th>Input</th><th>Esito</th><th>Risultato</th><th>Fonte</th></tr></thead>
-            <tbody id="logBody">
-              <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px;">Nessuna ricerca registrata.</td></tr>
-            </tbody>
+            <tbody id="logBody"><tr><td colspan="5" style="text-align:center;color:var(--m);padding:20px;">Nessuna ricerca registrata.</td></tr></tbody>
           </table>
         </div>
         <div class="row">
-          <button class="ghost" id="exportLogBtn">📥 Esporta log in CSV</button>
+          <button class="ghost" id="exportLogBtn">📥 Esporta log CSV</button>
           <button class="danger" id="resetLogBtn">🗑️ Cancella log</button>
         </div>
       </div>
 
-      <div class="tab-content" id="tab-security">
+      <div class="tc" id="tab-security">
         <h3>Cambia password amministratore</h3>
-        <p style="color:var(--muted);font-size:.9rem;">La password è salvata localmente nel browser (persiste tra sessioni). Minimo 4 caratteri.</p>
-        <div style="margin-top:14px;">
-          <label style="display:block;color:var(--muted);font-size:.85rem;margin-bottom:6px;">Password attuale</label>
-          <input type="password" id="pwdOld" placeholder="••••••">
-        </div>
-        <div style="margin-top:12px;">
-          <label style="display:block;color:var(--muted);font-size:.85rem;margin-bottom:6px;">Nuova password</label>
-          <input type="password" id="pwdNew" placeholder="••••••">
-        </div>
-        <div style="margin-top:12px;">
-          <label style="display:block;color:var(--muted);font-size:.85rem;margin-bottom:6px;">Conferma nuova password</label>
-          <input type="password" id="pwdConfirm" placeholder="••••••">
-        </div>
-        <div class="login-error" id="pwdError"></div>
-        <div class="login-success" id="pwdSuccess" style="color:var(--ok);font-weight:700;margin-top:12px;min-height:1.3em;font-size:.9rem;"></div>
-        <div class="row">
-          <button class="mic" id="savePwdBtn" style="min-width:auto;padding:14px 24px;">💾 Salva nuova password</button>
-        </div>
+        <p style="color:var(--m);font-size:.9rem;">Salvata localmente nel browser. Minimo 4 caratteri.</p>
+        <div style="margin-top:14px;"><label style="display:block;color:var(--m);font-size:.85rem;margin-bottom:6px;">Password attuale</label><input type="password" id="pwdOld" placeholder="••••••"></div>
+        <div style="margin-top:12px;"><label style="display:block;color:var(--m);font-size:.85rem;margin-bottom:6px;">Nuova password</label><input type="password" id="pwdNew" placeholder="••••••"></div>
+        <div style="margin-top:12px;"><label style="display:block;color:var(--m);font-size:.85rem;margin-bottom:6px;">Conferma nuova password</label><input type="password" id="pwdConfirm" placeholder="••••••"></div>
+        <div class="le" id="pwdError"></div>
+        <div id="pwdSuccess" style="color:var(--ok);font-weight:700;margin-top:12px;min-height:1.3em;font-size:.9rem;"></div>
+        <div class="row"><button class="mic" id="savePwdBtn" style="min-width:auto;padding:14px 24px;">💾 Salva nuova password</button></div>
         <h3 style="margin-top:32px;">Ripristina password predefinita</h3>
-        <p style="color:var(--muted);font-size:.9rem;">Riporta la password a <code>123456</code>. Utile se hai dimenticato quella nuova.</p>
+        <p style="color:var(--m);font-size:.9rem;">Riporta la password a <code>123456</code>.</p>
         <div class="row"><button class="ghost" id="resetPwdBtn">↺ Ripristina a 123456</button></div>
       </div>
 
-      <div class="modal-actions" style="margin-top:24px;">
+      <div class="ma" style="margin-top:24px;">
         <button class="ghost" id="logoutBtn">🔒 Blocca</button>
         <button class="mic" id="closePanelBtn" style="min-width:auto;padding:14px 24px;">Chiudi</button>
       </div>
@@ -305,6 +236,9 @@
 </div>
 
 <script>
+/* ============================================================
+   CONFIG
+   ============================================================ */
 const ADMIN_PASSWORD_DEFAULT = "123456";
 const ADMIN_SESSION_KEY = "assistente_smistamento_admin";
 const PWD_STORAGE_KEY   = "assistente_pwd_hash";
@@ -313,155 +247,50 @@ const LOG_STORAGE_KEY   = "assistente_log";
 const LOG_MAX_ENTRIES   = 1000;
 const FUZZY_THRESHOLD   = 0.72;
 
+/* DB di esempio minimal (verrà sovrascritto dal CSV) */
 const DB_DEFAULT = [
-  { via:"Via Roma",da:1,a:199,paese:"Gravina di Catania",cap:"95030",portalettere:"39"},
-  { via:"Via Roma",da:200,a:299,paese:"Gravina di Catania",cap:"95030",portalettere:"40"},
-  { via:"Via Etnea",da:1,a:999,paese:"Gravina di Catania",cap:"95030",portalettere:"12"},
-  { via:"Via Garibaldi",da:1,a:999,paese:"Gravina di Catania",cap:"95030",portalettere:"15"},
-  { via:"Corso Italia",da:1,a:999,paese:"Gravina di Catania",cap:"95030",portalettere:"22"},
-  { via:"Via Vittorio Emanuele",da:1,a:999,paese:"Gravina di Catania",cap:"95030",portalettere:"8"},
-  { via:"Via Catania",da:1,a:999,paese:"Gravina di Catania",cap:"95030",portalettere:"27"},
-  { via:"Via Palermo",da:1,a:999,paese:"Gravina di Catania",cap:"95030",portalettere:"33"},
-  { via:"Via della Repubblica",da:1,a:999,paese:"Gravina di Catania",cap:"95030",portalettere:"41"},
-  { via:"Viale Europa",da:1,a:999,paese:"Gravina di Catania",cap:"95030",portalettere:"51"},
-  { via:"Via Etnea",da:1,a:999,paese:"Catania",cap:"95100",portalettere:"5"},
-  { via:"Via Roma",da:1,a:999,paese:"Catania",cap:"95100",portalettere:"11"},
-  { via:"Corso Sicilia",da:1,a:999,paese:"Catania",cap:"95100",portalettere:"14"},
-  { via:"Via Umberto",da:1,a:999,paese:"Catania",cap:"95100",portalettere:"19"},
-  { via:"Via Garibaldi",da:1,a:999,paese:"Catania",cap:"95100",portalettere:"23"},
-  { via:"Piazza Duomo",da:1,a:999,paese:"Catania",cap:"95100",portalettere:"7"},
-  { via:"Via Sant'Euplio",da:1,a:999,paese:"Catania",cap:"95100",portalettere:"28"},
-  { via:"Via Acquicella",da:1,a:999,paese:"Catania",cap:"95100",portalettere:"34"},
-  { via:"Via Milano",da:1,a:999,paese:"Catania",cap:"95100",portalettere:"45"},
-  { via:"Viale Africa",da:1,a:999,paese:"Catania",cap:"95100",portalettere:"52"},
-  { via:"Via Roma",da:1,a:999,paese:"Roma",cap:"00100",portalettere:"3"},
-  { via:"Via del Corso",da:1,a:999,paese:"Roma",cap:"00100",portalettere:"6"},
-  { via:"Via Nazionale",da:1,a:999,paese:"Roma",cap:"00100",portalettere:"9"},
-  { via:"Via Veneto",da:1,a:999,paese:"Roma",cap:"00100",portalettere:"13"},
-  { via:"Via del Colosseo",da:1,a:999,paese:"Roma",cap:"00100",portalettere:"17"},
-  { via:"Via Appia",da:1,a:999,paese:"Roma",cap:"00100",portalettere:"21"},
-  { via:"Via Tiburtina",da:1,a:999,paese:"Roma",cap:"00100",portalettere:"25"},
-  { via:"Via Cassia",da:1,a:999,paese:"Roma",cap:"00100",portalettere:"30"},
-  { via:"Via Aurelia",da:1,a:999,paese:"Roma",cap:"00100",portalettere:"36"},
-  { via:"Viale Trastevere",da:1,a:999,paese:"Roma",cap:"00100",portalettere:"42"},
-  { via:"Corso Buenos Aires",da:1,a:999,paese:"Milano",cap:"20100",portalettere:"4"},
-  { via:"Via Torino",da:1,a:999,paese:"Milano",cap:"20100",portalettere:"10"},
-  { via:"Via Dante",da:1,a:999,paese:"Milano",cap:"20100",portalettere:"16"},
-  { via:"Corso Como",da:1,a:999,paese:"Milano",cap:"20100",portalettere:"20"},
-  { via:"Via Montenapoleone",da:1,a:999,paese:"Milano",cap:"20100",portalettere:"24"},
-  { via:"Via Manzoni",da:1,a:999,paese:"Milano",cap:"20100",portalettere:"29"},
-  { via:"Via Roma",da:1,a:999,paese:"Milano",cap:"20100",portalettere:"35"},
-  { via:"Viale Certosa",da:1,a:999,paese:"Milano",cap:"20100",portalettere:"38"},
-  { via:"Via Ripamonti",da:1,a:999,paese:"Milano",cap:"20100",portalettere:"44"},
-  { via:"Corso Sempione",da:1,a:999,paese:"Milano",cap:"20100",portalettere:"49"},
-  { via:"Via Toledo",da:1,a:999,paese:"Napoli",cap:"80100",portalettere:"2"},
-  { via:"Via Chiaia",da:1,a:999,paese:"Napoli",cap:"80100",portalettere:"11"},
-  { via:"Corso Umberto",da:1,a:999,paese:"Napoli",cap:"80100",portalettere:"17"},
-  { via:"Via Duomo",da:1,a:999,paese:"Napoli",cap:"80100",portalettere:"22"},
-  { via:"Via Posillipo",da:1,a:999,paese:"Napoli",cap:"80100",portalettere:"26"},
-  { via:"Via Caracciolo",da:1,a:999,paese:"Napoli",cap:"80100",portalettere:"31"},
-  { via:"Via Foria",da:1,a:999,paese:"Napoli",cap:"80100",portalettere:"37"},
-  { via:"Piazza Garibaldi",da:1,a:999,paese:"Napoli",cap:"80100",portalettere:"43"},
-  { via:"Via Marina",da:1,a:999,paese:"Napoli",cap:"80100",portalettere:"48"},
-  { via:"Viale Kennedy",da:1,a:999,paese:"Napoli",cap:"80100",portalettere:"53"},
-  { via:"Via Po",da:1,a:999,paese:"Torino",cap:"10100",portalettere:"5"},
-  { via:"Via Roma",da:1,a:999,paese:"Torino",cap:"10100",portalettere:"12"},
-  { via:"Corso Vittorio Emanuele",da:1,a:999,paese:"Torino",cap:"10100",portalettere:"18"},
-  { via:"Via Garibaldi",da:1,a:999,paese:"Torino",cap:"10100",portalettere:"24"},
-  { via:"Corso Francia",da:1,a:999,paese:"Torino",cap:"10100",portalettere:"28"},
-  { via:"Via Nizza",da:1,a:999,paese:"Torino",cap:"10100",portalettere:"32"},
-  { via:"Corso Regina Margherita",da:1,a:999,paese:"Torino",cap:"10100",portalettere:"39"},
-  { via:"Via Cibrario",da:1,a:999,paese:"Torino",cap:"10100",portalettere:"46"},
-  { via:"Via Monginevro",da:1,a:999,paese:"Torino",cap:"10100",portalettere:"50"},
-  { via:"Corso Giulio Cesare",da:1,a:999,paese:"Torino",cap:"10100",portalettere:"54"},
-  { via:"Via Rizzoli",da:1,a:999,paese:"Bologna",cap:"40100",portalettere:"6"},
-  { via:"Via Indipendenza",da:1,a:999,paese:"Bologna",cap:"40100",portalettere:"13"},
-  { via:"Via Zamboni",da:1,a:999,paese:"Bologna",cap:"40100",portalettere:"19"},
-  { via:"Via Irnerio",da:1,a:999,paese:"Bologna",cap:"40100",portalettere:"25"},
-  { via:"Via Mazzini",da:1,a:999,paese:"Bologna",cap:"40100",portalettere:"30"},
-  { via:"Via Ugo Bassi",da:1,a:999,paese:"Bologna",cap:"40100",portalettere:"34"},
-  { via:"Via Santo Stefano",da:1,a:999,paese:"Bologna",cap:"40100",portalettere:"40"},
-  { via:"Via Saragozza",da:1,a:999,paese:"Bologna",cap:"40100",portalettere:"47"},
-  { via:"Via Toscana",da:1,a:999,paese:"Bologna",cap:"40100",portalettere:"51"},
-  { via:"Viale Silvani",da:1,a:999,paese:"Bologna",cap:"40100",portalettere:"55"},
-  { via:"Via Roma",da:1,a:999,paese:"Firenze",cap:"50100",portalettere:"7"},
-  { via:"Via dei Calzaiuoli",da:1,a:999,paese:"Firenze",cap:"50100",portalettere:"14"},
-  { via:"Via Tornabuoni",da:1,a:999,paese:"Firenze",cap:"50100",portalettere:"21"},
-  { via:"Via del Proconsolo",da:1,a:999,paese:"Firenze",cap:"50100",portalettere:"27"},
-  { via:"Via Ghibellina",da:1,a:999,paese:"Firenze",cap:"50100",portalettere:"33"},
-  { via:"Via dei Servi",da:1,a:999,paese:"Firenze",cap:"50100",portalettere:"38"},
-  { via:"Lungarno Vespucci",da:1,a:999,paese:"Firenze",cap:"50100",portalettere:"44"},
-  { via:"Viale dei Mille",da:1,a:999,paese:"Firenze",cap:"50100",portalettere:"48"},
-  { via:"Via Pisana",da:1,a:999,paese:"Firenze",cap:"50100",portalettere:"52"},
-  { via:"Via Bolognese",da:1,a:999,paese:"Firenze",cap:"50100",portalettere:"56"},
-  { via:"Via Libertà",da:1,a:999,paese:"Palermo",cap:"90100",portalettere:"8"},
-  { via:"Via Roma",da:1,a:999,paese:"Palermo",cap:"90100",portalettere:"15"},
-  { via:"Corso Vittorio Emanuele",da:1,a:999,paese:"Palermo",cap:"90100",portalettere:"20"},
-  { via:"Via Maqueda",da:1,a:999,paese:"Palermo",cap:"90100",portalettere:"26"},
-  { via:"Via Notarbartolo",da:1,a:999,paese:"Palermo",cap:"90100",portalettere:"32"},
-  { via:"Via Lincoln",da:1,a:999,paese:"Palermo",cap:"90100",portalettere:"36"},
-  { via:"Via Oreto",da:1,a:999,paese:"Palermo",cap:"90100",portalettere:"41"},
-  { via:"Viale Regione Siciliana",da:1,a:999,paese:"Palermo",cap:"90100",portalettere:"45"},
-  { via:"Via Messina",da:1,a:999,paese:"Palermo",cap:"90100",portalettere:"49"},
-  { via:"Via dell'Orologio",da:1,a:999,paese:"Palermo",cap:"90100",portalettere:"57"},
-  { via:"Via Sparano",da:1,a:999,paese:"Bari",cap:"70100",portalettere:"9"},
-  { via:"Corso Cavour",da:1,a:999,paese:"Bari",cap:"70100",portalettere:"16"},
-  { via:"Via Andrea da Bari",da:1,a:999,paese:"Bari",cap:"70100",portalettere:"23"},
-  { via:"Via Manzoni",da:1,a:999,paese:"Bari",cap:"70100",portalettere:"28"},
-  { via:"Via Abbrescia",da:1,a:999,paese:"Bari",cap:"70100",portalettere:"35"},
-  { via:"Lungomare Nazario Sauro",da:1,a:999,paese:"Bari",cap:"70100",portalettere:"42"},
-  { via:"Via Amendola",da:1,a:999,paese:"Bari",cap:"70100",portalettere:"46"},
-  { via:"Via della Repubblica",da:1,a:999,paese:"Bari",cap:"70100",portalettere:"50"},
-  { via:"Via Brigata Regina",da:1,a:999,paese:"Bari",cap:"70100",portalettere:"54"},
-  { via:"Viale Unità d'Italia",da:1,a:999,paese:"Bari",cap:"70100",portalettere:"58"},
+  {via:"Roma",da:1,a:199,paese:"Gravina di Catania",cap:"95030",portalettere:"39"},
+  {via:"Roma",da:200,a:299,paese:"Gravina di Catania",cap:"95030",portalettere:"40"},
+  {via:"Etnea",da:1,a:999,paese:"Gravina di Catania",cap:"95030",portalettere:"12"},
+  {via:"Garibaldi",da:1,a:999,paese:"Gravina di Catania",cap:"95030",portalettere:"15"},
+  {via:"Roma",da:1,a:999,paese:"Catania",cap:"95100",portalettere:"11"},
+  {via:"Etnea",da:1,a:999,paese:"Catania",cap:"95100",portalettere:"5"},
+  {via:"Roma",da:1,a:999,paese:"Roma",cap:"00100",portalettere:"3"},
+  {via:"Roma",da:1,a:999,paese:"Milano",cap:"20100",portalettere:"35"},
+  {via:"Roma",da:1,a:999,paese:"Torino",cap:"10100",portalettere:"12"},
+  {via:"Roma",da:1,a:999,paese:"Firenze",cap:"50100",portalettere:"7"},
+  {via:"Roma",da:1,a:999,paese:"Palermo",cap:"90100",portalettere:"15"},
 ];
 let DB = DB_DEFAULT.map(x => ({...x}));
 
-const _U = ["","uno","due","tre","quattro","cinque","sei","sette","otto","nove",
-  "dieci","undici","dodici","tredici","quattordici","quindici","sedici",
-  "diciassette","diciotto","diciannove"];
+/* ============================================================
+   NUMERI ITALIANI → CIFRE / PAROLE
+   ============================================================ */
+const _U = ["","uno","due","tre","quattro","cinque","sei","sette","otto","nove","dieci","undici","dodici","tredici","quattordici","quindici","sedici","diciassette","diciotto","diciannove"];
 const _T = ["","","venti","trenta","quaranta","cinquanta","sessanta","settanta","ottanta","novanta"];
-function _below100(n){ if (n < 20) return _U[n];
-  const d = Math.floor(n/10), r = n%10; let base = _T[d];
-  if (r === 1 || r === 8) base = base.slice(0,-1); return base + _U[r]; }
-function _variants(n){ if (n === 0) return ["zero"]; if (n < 100) return [_below100(n)];
-  const h = Math.floor(n/100), r = n%100; const prefix = (h === 1 ? "cento" : _U[h] + "cento");
-  if (r === 0) return [prefix]; const out = [];
-  for (const rv of _variants(r)){ out.push(prefix + rv);
-    if (prefix.endsWith("o") && rv.startsWith("o")) out.push(prefix.slice(0,-1) + rv); }
+function _b100(n){ if (n<20) return _U[n]; const d=Math.floor(n/10),r=n%10; let b=_T[d]; if(r===1||r===8)b=b.slice(0,-1); return b+_U[r]; }
+function _var(n){ if(n===0)return["zero"]; if(n<100)return[_b100(n)];
+  const h=Math.floor(n/100),r=n%100; const p=(h===1?"cento":_U[h]+"cento");
+  if(r===0)return[p]; const out=[];
+  for(const v of _var(r)){ out.push(p+v); if(p.endsWith("o")&&v.startsWith("o"))out.push(p.slice(0,-1)+v); }
   return out; }
 const NUM_MAP = {};
-for (let n = 0; n <= 999; n++){ for (const w of _variants(n)){
-  NUM_MAP[w] = String(n); if (w.endsWith("tre") && w !== "tre") NUM_MAP[w.slice(0,-3)+"tré"] = String(n); } }
-function replaceNumbers(text){ return text.split(" ").map(t => NUM_MAP[t] || t).join(" "); }
-function numberToItWords(n){ n = parseInt(n, 10);
-  if (isNaN(n) || n < 0 || n > 999) return String(n);
-  let word = _variants(n)[0];
-  if (word.endsWith("tre") && word !== "tre") word = word.slice(0, -3) + "tré";
-  return word; }
+for(let n=0;n<=999;n++) for(const w of _var(n)){ NUM_MAP[w]=String(n); if(w.endsWith("tre")&&w!=="tre")NUM_MAP[w.slice(0,-3)+"tré"]=String(n); }
+function replaceNumbers(t){ return t.split(" ").map(x=>NUM_MAP[x]||x).join(" "); }
+function numberToItWords(n){ n=parseInt(n,10); if(isNaN(n)||n<0||n>999)return String(n);
+  let w=_var(n)[0]; if(w.endsWith("tre")&&w!=="tre")w=w.slice(0,-3)+"tré"; return w; }
 
-const DUG_WORDS = new Set([
-  "via","viale","vle","vial","viali","piazza","piazzale","piazzetta","piazzett","piaz","piazz",
-  "vicolo","vic","vico","vicò","vialetto","vialetti","corso","cso","corsi","largo","lgo","larghi",
-  "strada","str","strade","stradella","stradone","stradoni","contrada","contra","contrà","contrade",
-  "lungargine","lungadige","lungarno","lungomare","lungolago","lungopo","riviera","circonvallazione",
-  "tangenziale","svincolo","rotonda","androna","calle","calletta","callesella","fondamenta","ramo",
-  "sotoportego","sotoport","salizada","liston","ruga","galleria","gall","passaggio","pass","traversa",
-  "trav","frazione","fraz","loc","localita","località","sottopasso","cavalcavia","passeggiata",
-  "belvedere","ta"
-]);
-const STOPWORDS = new Set([
-  "di","del","della","dei","degli","delle","da","dal","dalla","dai","dagli","dalle",
-  "in","a","al","alla","ai","agli","alle","e","ed","la","il","lo","le","gli","l","d",
-  "su","sul","sullo","sulla","sui","sugli","sulle","per","con","tra","fra","nel","nello",
-  "nella","nei","negli","nelle","un","uno","una"
-]);
+/* ============================================================
+   DUG / STOPWORDS / SINONIMI / ESPANSIONI PAESE
+   ============================================================ */
+const DUG_WORDS = new Set(["via","viale","vle","vial","viali","piazza","piazzale","piazzetta","piazzett","piaz","piazz","vicolo","vic","vico","vicò","vialetto","vialetti","corso","cso","corsi","largo","lgo","larghi","strada","str","strade","stradella","stradone","stradoni","contrada","contra","contrà","contrade","lungargine","lungadige","lungarno","lungomare","lungolago","lungopo","riviera","circonvallazione","tangenziale","svincolo","rotonda","androna","calle","calletta","callesella","fondamenta","ramo","sotoportego","sotoport","salizada","liston","ruga","galleria","gall","passaggio","pass","traversa","trav","frazione","fraz","loc","localita","località","sottopasso","cavalcavia","passeggiata","belvedere","ta"]);
+const STOPWORDS = new Set(["di","del","della","dei","degli","delle","da","dal","dalla","dai","dagli","dalle","in","a","al","alla","ai","agli","alle","e","ed","la","il","lo","le","gli","l","d","su","sul","sullo","sulla","sui","sugli","sulle","per","con","tra","fra","nel","nello","nella","nei","negli","nelle","un","uno","una"]);
 const SYNONYM_GROUPS = [
-  ["s","san","santo","santa","santi","sant","santissimo","santissima"],
+  ["s","san","santo","santa","santi","sant"],
   ["d","di","de","del","della","dello","dei","degli","delle"],
   ["b","brenta","bosco","bassano"],
   ["l","lupari"],
-  ["p","padovana"],
+  ["p","padovana","padovano"],
   ["v","veneto"],
   ["m","marchesana"],
   ["petr","petrarca"],
@@ -471,51 +300,52 @@ const SYNONYM_GROUPS = [
   ["rio","viminario"]
 ];
 const COUNTRY_EXPANSIONS = {
-  "CAMPO S.MARTINO":  "Campo San Martino",
-  "CARMIGNANO B.":    "Carmignano di Brenta",
-  "PIAZZOLA B.":      "Piazzola sul Brenta",
-  "S. GIORGIO B.":    "San Giorgio in Bosco",
-  "S. MARTINO L.":    "San Martino di Lupari",
-  "VILLAFRANCA P.":   "Villafranca Padovana",
-  "S.CATERINA D'E.":  "Santa Caterina d'Este",
-  "S.PIETRO VI.RIO":  "San Pietro Viminario",
-  "ARQUA' PETR.":     "Arqua Petrarca",
-  "ARIANO POLES.":    "Ariano nel Polesine",
-  "PIACENZA D'A.":    "Piacenza d'Adige",
-  "BORGO V.":         "Borgo Veneto",
-  "VILLANOVA M.":     "Villanova Marchesana",
-  "LOZZO ATES.":      "Lozzo Atestino",
-  "PONTE S.NICOLO'":  "Ponte San Nicolo",
-  "PONTE S. NICOLO'": "Ponte San Nicolo",
-  "NOVENTA PAD.":     "Noventa Padovana",
-  "MEGLIADINO S. V.": "Megliadino San Vitale",
-  "S. PIETRO IN GU":  "San Pietro in Gu",
-  "SANT'ELENA":       "Sant Elena"
+  "CAMPO S.MARTINO":"Campo San Martino",
+  "CARMIGNANO B.":"Carmignano di Brenta",
+  "PIAZZOLA B.":"Piazzola sul Brenta",
+  "S. GIORGIO B.":"San Giorgio in Bosco",
+  "S. MARTINO L.":"San Martino di Lupari",
+  "VILLAFRANCA P.":"Villafranca Padovana",
+  "S.CATERINA D'E.":"Santa Caterina d'Este",
+  "S.PIETRO VI.RIO":"San Pietro Viminario",
+  "ARQUA' PETR.":"Arqua Petrarca",
+  "ARIANO POLES.":"Ariano nel Polesine",
+  "PIACENZA D'A.":"Piacenza d'Adige",
+  "BORGO V.":"Borgo Veneto",
+  "VILLANOVA M.":"Villanova Marchesana",
+  "LOZZO ATES.":"Lozzo Atestino",
+  "PONTE S.NICOLO'":"Ponte San Nicolo",
+  "PONTE S. NICOLO'":"Ponte San Nicolo",
+  "NOVENTA PAD.":"Noventa Padovana",
+  "MEGLIADINO S. V.":"Megliadino San Vitale",
+  "S. PIETRO IN GU":"San Pietro in Gu",
+  "SANT'ELENA":"Sant Elena"
 };
 
+/* ============================================================
+   NORMALIZZAZIONE / TOKENIZZAZIONE
+   ============================================================ */
 function normalize(s){
-  return (s || "").toLowerCase()
-    .replace(/[''`]/g, " ")
-    .replace(/[.,;:!?'"()\[\]\/]/g, " ")
-    .replace(/\s+/g, " ").trim();
+  return (s||"").toLowerCase().replace(/[''`]/g," ")
+    .replace(/[.,;:!?'"()\[\]\/]/g," ").replace(/\s+/g," ").trim();
 }
 function preprocessAbbreviations(s){
   return String(s)
-    .replace(/\bv\.?\s*le\b/gi, "viale")
-    .replace(/\bpiazz\.?\s*ta\b/gi, "piazzetta")
-    .replace(/\bpiaz\.?\s*ta\b/gi, "piazzetta")
-    .replace(/\bpiaz\.?\b/gi, "piazza")
-    .replace(/\bvic\.?\b/gi, "vicolo")
-    .replace(/\bstr\.?\b/gi, "strada")
-    .replace(/\bc\.?\s*so\b/gi, "corso")
-    .replace(/\blng\.?\b/gi, "lungargine")
-    .replace(/\bcont\.?\s*da\b/gi, "contrada")
-    .replace(/\bloc\.?\b/gi, "localita")
-    .replace(/\bfraz\.?\b/gi, "frazione")
-    .replace(/\blgo\.?\b/gi, "largo")
-    .replace(/\bgall\.?\b/gi, "galleria")
-    .replace(/\btrav\.?\b/gi, "traversa")
-    .replace(/\bpass\.?\b/gi, "passaggio");
+    .replace(/\bv\.?\s*le\b/gi,"viale")
+    .replace(/\bpiazz\.?\s*ta\b/gi,"piazzetta")
+    .replace(/\bpiaz\.?\s*ta\b/gi,"piazzetta")
+    .replace(/\bpiaz\.?\b/gi,"piazza")
+    .replace(/\bvic\.?\b/gi,"vicolo")
+    .replace(/\bstr\.?\b/gi,"strada")
+    .replace(/\bc\.?\s*so\b/gi,"corso")
+    .replace(/\blng\.?\b/gi,"lungargine")
+    .replace(/\bcont\.?\s*da\b/gi,"contrada")
+    .replace(/\bloc\.?\b/gi,"localita")
+    .replace(/\bfraz\.?\b/gi,"frazione")
+    .replace(/\blgo\.?\b/gi,"largo")
+    .replace(/\bgall\.?\b/gi,"galleria")
+    .replace(/\btrav\.?\b/gi,"traversa")
+    .replace(/\bpass\.?\b/gi,"passaggio");
 }
 function tokenizeNoStop(s){
   const pre = preprocessAbbreviations(s);
@@ -527,308 +357,631 @@ function tokenizeNoStop(s){
   });
 }
 function countryToTokens(name){
-  const expanded = COUNTRY_EXPANSIONS[String(name).toUpperCase()] || name;
-  return tokenizeNoStop(expanded);
+  const exp = COUNTRY_EXPANSIONS[String(name).toUpperCase()] || name;
+  return tokenizeNoStop(exp);
 }
 
-function levenshtein(a, b, maxDist){
-  if (Math.abs(a.length - b.length) > maxDist) return maxDist + 1;
-  const m = a.length, n = b.length;
-  if (m === 0) return n; if (n === 0) return m;
-  let prev = new Array(n + 1); let curr = new Array(n + 1);
-  for (let j = 0; j <= n; j++) prev[j] = j;
-  for (let i = 1; i <= m; i++){
-    curr[0] = i; let minRow = curr[0];
-    for (let j = 1; j <= n; j++){
-      const cost = a[i-1] === b[j-1] ? 0 : 1;
-      curr[j] = Math.min(prev[j]+1, curr[j-1]+1, prev[j-1]+cost);
-      if (curr[j] < minRow) minRow = curr[j];
+/* ============================================================
+   LEVENSHTEIN + SINONIMI
+   ============================================================ */
+function levenshtein(a,b,maxD){
+  if (Math.abs(a.length-b.length)>maxD) return maxD+1;
+  const m=a.length, n=b.length;
+  if (m===0) return n; if (n===0) return m;
+  let prev=new Array(n+1), curr=new Array(n+1);
+  for (let j=0;j<=n;j++) prev[j]=j;
+  for (let i=1;i<=m;i++){
+    curr[0]=i; let mr=curr[0];
+    for (let j=1;j<=n;j++){
+      const c=a[i-1]===b[j-1]?0:1;
+      curr[j]=Math.min(prev[j]+1,curr[j-1]+1,prev[j-1]+c);
+      if (curr[j]<mr) mr=curr[j];
     }
-    if (minRow > maxDist) return maxDist + 1;
-    [prev, curr] = [curr, prev];
+    if (mr>maxD) return maxD+1;
+    [prev,curr]=[curr,prev];
   }
   return prev[n];
 }
-function tokensMatch(a, b){
-  if (a === b) return true;
-  for (const group of SYNONYM_GROUPS){
-    if (group.indexOf(a) !== -1 && group.indexOf(b) !== -1) return true;
-  }
+function tokensMatch(a,b){
+  if (a===b) return true;
+  for (const g of SYNONYM_GROUPS){ if (g.indexOf(a)!==-1 && g.indexOf(b)!==-1) return true; }
   return false;
 }
-function tokenDistance(a, b, maxD){
-  if (tokensMatch(a, b)) return 0;
-  return levenshtein(a, b, maxD);
-}
+function tokenDistance(a,b,maxD){ return tokensMatch(a,b) ? 0 : levenshtein(a,b,maxD); }
 
-let vieUnicheCache = [];
-let paesiUniciCache = [];
-let vieTokenizzate = [];
-let paesiTokenizzati = [];
-
+/* ============================================================
+   CACHE
+   ============================================================ */
+let vieUnicheCache=[], paesiUniciCache=[], vieTokenizzate=[], paesiTokenizzati=[];
 function rebuildCaches(){
-  const vieSet = new Set();
-  const paesiSet = new Set();
-  for (const e of DB){ vieSet.add(e.via); paesiSet.add(e.paese); }
-  vieUnicheCache = [...vieSet];
-  paesiUniciCache = [...paesiSet];
-  vieTokenizzate = vieUnicheCache
-    .map(v => ({ orig: v, tokens: tokenizeNoStop(v) }))
-    .filter(x => x.tokens.length > 0);
-  paesiTokenizzati = paesiUniciCache
-    .map(p => ({ orig: p, tokens: countryToTokens(p) }))
-    .filter(x => x.tokens.length > 0);
+  const vs=new Set(), ps=new Set();
+  for (const e of DB){ vs.add(e.via); ps.add(e.paese); }
+  vieUnicheCache=[...vs]; paesiUniciCache=[...ps];
+  vieTokenizzate = vieUnicheCache.map(v=>({orig:v,tokens:tokenizeNoStop(v)})).filter(x=>x.tokens.length>0);
+  paesiTokenizzati = paesiUniciCache.map(p=>({orig:p,tokens:countryToTokens(p)})).filter(x=>x.tokens.length>0);
 }
 
-function bestAlignment(textTokens, candTokens){
-  const n = candTokens.length, m = textTokens.length;
-  if (n === 0 || m === 0) return 0;
-  let bestSim = 0;
-  for (let offset = -n + 1; offset <= m - 1; offset++){
-    let totalDist = 0, totalLen = 0, covered = 0, considered = 0;
-    for (let j = 0; j < n; j++){
-      const tIdx = j + offset;
-      if (tIdx < 0 || tIdx >= m) continue;
-      considered++;
-      const t = textTokens[tIdx], c = candTokens[j];
-      const maxLen = Math.max(t.length, c.length);
-      const maxD = Math.max(1, Math.floor(maxLen / 3));
-      const d = tokenDistance(t, c, maxD);
-      if (d <= maxD) covered++;
-      totalDist += Math.min(d, maxLen);
-      totalLen += maxLen;
+/* ============================================================
+   FUZZY
+   ============================================================ */
+function bestAlignment(tt, ct){
+  const n=ct.length, m=tt.length;
+  if (!n||!m) return 0;
+  let best=0;
+  for (let off=-n+1; off<=m-1; off++){
+    let td=0, tl=0, cov=0, cons=0;
+    for (let j=0;j<n;j++){
+      const ti=j+off; if (ti<0||ti>=m) continue;
+      cons++;
+      const t=tt[ti], c=ct[j];
+      const ml=Math.max(t.length,c.length);
+      const md=Math.max(1,Math.floor(ml/3));
+      const d=tokenDistance(t,c,md);
+      if (d<=md) cov++;
+      td += Math.min(d,ml); tl += ml;
     }
-    if (considered === 0) continue;
-    const sim = totalLen > 0 ? 1 - totalDist / totalLen : 0;
-    const adjusted = sim * (0.5 + 0.5 * (covered / m));
-    if (adjusted > bestSim) bestSim = adjusted;
+    if (!cons) continue;
+    const sim = tl>0 ? 1-td/tl : 0;
+    const adj = sim * (0.5 + 0.5*(cov/m));
+    if (adj>best) best=adj;
   }
-  return bestSim;
+  return best;
 }
-
-function findTopMatches(textTokens, candidates, topN){
-  const scored = [];
-  for (const cand of candidates){
-    if (!cand.tokens || !cand.tokens.length) continue;
-    const sim = bestAlignment(textTokens, cand.tokens);
-    if (sim >= FUZZY_THRESHOLD) scored.push({ match: cand.orig, sim });
+function findTopMatches(tt, cands, n){
+  const sc=[];
+  for (const c of cands){
+    if (!c.tokens||!c.tokens.length) continue;
+    const s=bestAlignment(tt, c.tokens);
+    if (s>=FUZZY_THRESHOLD) sc.push({match:c.orig, sim:s});
   }
-  scored.sort((a, b) => b.sim - a.sim);
-  return scored.slice(0, topN);
+  sc.sort((a,b)=>b.sim-a.sim);
+  return sc.slice(0,n);
 }
-
 function fuzzyCorrect(raw){
-  let t = normalize(raw);
-  t = replaceNumbers(t);
-  const tokens = t.split(" ").filter(Boolean);
-  const tokensNoStop = tokens.filter(tk =>
-    tk && tk.length > 1 && !STOPWORDS.has(tk) && !DUG_WORDS.has(tk)
-  );
-  if (!tokensNoStop.length) return null;
-
-  const topVie = findTopMatches(tokensNoStop, vieTokenizzate, 5);
-  const topPaesi = findTopMatches(tokensNoStop, paesiTokenizzati, 3);
-  if (!topVie.length || !topPaesi.length) return null;
-
-  const civMatch = t.match(/\b(\d{1,4})\b/);
-  const civico = civMatch ? civMatch[1] : "";
-
-  for (const via of topVie){
-    for (const paese of topPaesi){
-      const corrected = [via.match, civico, paese.match].filter(Boolean).join(" ");
-      const r = lookup(corrected);
-      if (r.ok){
-        return { text: corrected, result: r, via: via.match, paese: paese.match,
-                 civico: civico ? parseInt(civico, 10) : null,
-                 sim: (via.sim + paese.sim) / 2 };
-      }
-    }
+  let t = replaceNumbers(normalize(raw));
+  const tok = t.split(" ").filter(Boolean);
+  const tns = tok.filter(x => x && x.length>1 && !STOPWORDS.has(x) && !DUG_WORDS.has(x));
+  if (!tns.length) return null;
+  const topV = findTopMatches(tns, vieTokenizzate, 5);
+  const topP = findTopMatches(tns, paesiTokenizzati, 3);
+  if (!topV.length || !topP.length) return null;
+  const civM = t.match(/\b(\d{1,4})\b/);
+  const civ = civM ? civM[1] : "";
+  for (const v of topV) for (const p of topP){
+    const corr = [v.match, civ, p.match].filter(Boolean).join(" ");
+    const r = lookup(corr);
+    if (r.ok) return {text:corr, result:r, via:v.match, paese:p.match,
+      civico:civ?parseInt(civ,10):null, sim:(v.sim+p.sim)/2};
   }
   return null;
 }
 
-/* Controlla se `word` appare in `text` con confini di parola (spazi o inizio/fine) */
+/* ============================================================
+   LOOKUP ESATTO (word-boundary)
+   ============================================================ */
 function containsWord(text, word){
   if (!word) return false;
   let idx = text.indexOf(word);
   while (idx !== -1){
-    const before = idx === 0 ? " " : text[idx - 1];
-    const afterIdx = idx + word.length;
-    const after = afterIdx >= text.length ? " " : text[afterIdx];
+    const before = idx === 0 ? " " : text[idx-1];
+    const ai = idx + word.length;
+    const after = ai >= text.length ? " " : text[ai];
     if (/\s/.test(before) && /\s/.test(after)) return true;
-    idx = text.indexOf(word, idx + 1);
+    idx = text.indexOf(word, idx+1);
   }
   return false;
 }
-
 function lookup(raw){
-  if (!raw || !raw.trim()) return { ok:false, message:"Nessun testo." };
+  if (!raw || !raw.trim()) return {ok:false, message:"Nessun testo."};
   let t = normalize(preprocessAbbreviations(raw));
   t = replaceNumbers(t);
-
-  const pairs = [], seen = new Set();
+  const pairs=[], seen=new Set();
   for (const e of DB){
     const via = normalize(e.via), paese = normalize(e.paese);
-    const key = via + "||" + paese;
-    if (seen.has(key)) continue;
+    const k = via+"||"+paese;
+    if (seen.has(k)) continue;
     if (containsWord(t, via) && t.includes(paese)){
-      seen.add(key);
-      pairs.push({ via, paese, score: via.length + paese.length });
+      seen.add(k);
+      pairs.push({via, paese, score: via.length+paese.length});
     }
   }
-  if (!pairs.length) return { ok:false, message:"Nessuna via/comune nel database.", transcript: raw };
-  pairs.sort((a,b) => b.score - a.score);
+  if (!pairs.length) return {ok:false, message:"Nessuna via/comune nel database.", transcript: raw};
+  pairs.sort((a,b)=>b.score-a.score);
   const top = pairs[0];
+  const vi = t.indexOf(top.via);
+  const after = t.slice(vi + top.via.length);
+  const mm = after.match(/\b(\d{1,4})\b/);
+  const civico = mm ? parseInt(mm[1],10) : null;
 
-  const viaIdx = t.indexOf(top.via);
-  const after = t.slice(viaIdx + top.via.length);
-  const m = after.match(/\b(\d{1,4})\b/);
-  const civico = m ? parseInt(m[1], 10) : null;
-
-  const entries = DB.filter(e =>
-    normalize(e.via) === top.via && normalize(e.paese) === top.paese);
-  const displayVia = entries[0].via;
-  const displayPaese = entries[0].paese;
-  const displayCap = entries[0].cap;
-
-  const generiche  = entries.filter(e => e.da == null && e.a == null);
-  const specifiche = entries.filter(e => e.da != null && e.a != null);
+  const entries = DB.filter(e => normalize(e.via)===top.via && normalize(e.paese)===top.paese);
+  const dV = entries[0].via, dP = entries[0].paese, dC = entries[0].cap;
+  const gen = entries.filter(e => e.da==null && e.a==null);
+  const spec = entries.filter(e => e.da!=null && e.a!=null);
 
   if (civico === null){
-    if (generiche.length === 1 && specifiche.length === 0){
-      return { ok:true, portalettere:[generiche[0].portalettere],
-        via:displayVia, paese:displayPaese, cap:displayCap, civico:null,
-        message:`${displayVia}, ${displayPaese} — tutta la via, portalettere ${generiche[0].portalettere}.` };
+    if (gen.length===1 && spec.length===0)
+      return {ok:true, portalettere:[gen[0].portalettere], via:dV, paese:dP, cap:dC, civico:null,
+        message:`${dV}, ${dP} — tutta la via, portalettere ${gen[0].portalettere}.`};
+    if (gen.length===1 && spec.length>0){
+      const pl=gen[0].portalettere;
+      const plS=[...new Set(spec.map(e=>e.portalettere).filter(p=>p!==pl))];
+      const nota = plS.length ? ` (alcuni civici: ${plS.join(", ")})` : "";
+      return {ok:true, portalettere:[pl], via:dV, paese:dP, cap:dC, civico:null,
+        message:`${dV}, ${dP} — di base ${pl}${nota}.`};
     }
-    if (generiche.length === 1 && specifiche.length > 0){
-      const plGen = generiche[0].portalettere;
-      const plSpec = [...new Set(specifiche.map(e => e.portalettere).filter(p => p !== plGen))];
-      const nota = plSpec.length ? ` (alcuni civici: ${plSpec.join(", ")})` : "";
-      return { ok:true, portalettere:[plGen],
-        via:displayVia, paese:displayPaese, cap:displayCap, civico:null,
-        message:`${displayVia}, ${displayPaese} — di base portalettere ${plGen}${nota}.` };
-    }
-    const postini = [...new Set(entries.map(e => e.portalettere))];
-    return { ok:true, portalettere:postini,
-      via:displayVia, paese:displayPaese, cap:displayCap, civico:null,
-      message:`Civico non indicato. ${displayVia}, ${displayPaese}. Portalettere: ${postini.join(", ")}.` };
+    const postini=[...new Set(entries.map(e=>e.portalettere))];
+    return {ok:true, portalettere:postini, via:dV, paese:dP, cap:dC, civico:null,
+      message:`Civico non indicato. ${dV}, ${dP}. Portalettere: ${postini.join(", ")}.`};
   }
-
-  const matchSpec = specifiche.find(e => civico >= e.da && civico <= e.a);
-  if (matchSpec){
-    return { ok:true, portalettere:[matchSpec.portalettere],
-      via:displayVia, paese:displayPaese, cap:displayCap, civico,
-      message:`${displayVia} ${civico} — ${displayPaese} (${displayCap})` };
-  }
-  if (generiche.length === 1){
-    return { ok:true, portalettere:[generiche[0].portalettere],
-      via:displayVia, paese:displayPaese, cap:displayCap, civico,
-      message:`${displayVia} ${civico} — ${displayPaese} (${displayCap}). Via coperta interamente.` };
-  }
-  const postini = [...new Set(entries.map(e => e.portalettere))];
-  return { ok:true, portalettere:postini,
-    via:displayVia, paese:displayPaese, cap:displayCap, civico,
-    message:`Civico ${civico} fuori range per ${displayVia}, ${displayPaese}. Portalettere della via: ${postini.join(", ")}.` };
+  const ms = spec.find(e => civico>=e.da && civico<=e.a);
+  if (ms) return {ok:true, portalettere:[ms.portalettere], via:dV, paese:dP, cap:dC, civico,
+    message:`${dV} ${civico} — ${dP} (${dC})`};
+  if (gen.length===1) return {ok:true, portalettere:[gen[0].portalettere], via:dV, paese:dP, cap:dC, civico,
+    message:`${dV} ${civico} — ${dP} (${dC}). Via coperta interamente.`};
+  const postini=[...new Set(entries.map(e=>e.portalettere))];
+  return {ok:true, portalettere:postini, via:dV, paese:dP, cap:dC, civico,
+    message:`Civico ${civico} fuori range per ${dV}, ${dP}. Portalettere: ${postini.join(", ")}.`};
 }
-
 function lookupSmart(raw){
-  const exact = lookup(raw);
-  if (exact.ok) return exact;
+  const ex = lookup(raw);
+  if (ex.ok) return ex;
   const fz = fuzzyCorrect(raw);
-  if (fz && fz.result && fz.result.ok){
-    return { ...fz.result, fuzzy:true, original:raw, corrected: fz.text, fuzzySim: fz.sim };
-  }
-  return exact;
+  if (fz && fz.result && fz.result.ok)
+    return {...fz.result, fuzzy:true, original:raw, corrected:fz.text, fuzzySim:fz.sim};
+  return ex;
 }
 
-let voices = [];
+/* ============================================================
+   TTS + BEEP
+   ============================================================ */
+let voices=[];
 function loadVoices(){ if (!("speechSynthesis" in window)) return; voices = window.speechSynthesis.getVoices(); }
 if ("speechSynthesis" in window){ loadVoices(); window.speechSynthesis.onvoiceschanged = loadVoices; }
-function pickItalianVoice(){
-  return voices.find(v => v.lang === 'it-IT')
-      || voices.find(v => v.lang && v.lang.toLowerCase().startsWith('it')) || null;
-}
+function pickIT(){ return voices.find(v=>v.lang==='it-IT') || voices.find(v=>v.lang && v.lang.toLowerCase().startsWith('it')) || null; }
 function codeToSpeech(code){
-  const s = String(code).trim();
-  const m = s.match(/^(\d+)(?:-([A-Za-z]+))?$/);
+  const s=String(code).trim();
+  const m=s.match(/^(\d+)(?:-([A-Za-z]+))?$/);
   if (!m) return s;
-  const numWord = numberToItWords(parseInt(m[1], 10));
-  const suffix = m[2] ? " " + m[2].toUpperCase() : "";
-  return numWord + suffix;
+  return numberToItWords(parseInt(m[1],10)) + (m[2]?" "+m[2].toUpperCase():"");
 }
 function prepareSpeechText(arr){ return arr.map(codeToSpeech).join(" e "); }
 function speak(text, cb){
-  if (!text){ cb && cb(); return; }
-  if (!("speechSynthesis" in window)){ cb && cb(); return; }
-  try { window.speechSynthesis.cancel(); } catch(_){}
-  const doSpeak = () => {
-    const u = new SpeechSynthesisUtterance(text);
-    const itVoice = pickItalianVoice();
-    if (itVoice){ u.voice = itVoice; u.lang = itVoice.lang; } else { u.lang = "it-IT"; }
-    u.rate = 0.95; u.pitch = 1; u.volume = 1;
-    let done = false;
-    const finish = () => { if (done) return; done = true; cb && cb(); };
-    u.onend = finish; u.onerror = finish;
-    setTimeout(finish, 12000);
-    try { window.speechSynthesis.speak(u); } catch(e){ finish(); }
+  if (!text){cb&&cb();return;}
+  if (!("speechSynthesis" in window)){cb&&cb();return;}
+  try{ window.speechSynthesis.cancel(); }catch(_){}
+  const go = () => {
+    const u=new SpeechSynthesisUtterance(text);
+    const v=pickIT();
+    if (v){u.voice=v;u.lang=v.lang;} else u.lang="it-IT";
+    u.rate=0.95;u.pitch=1;u.volume=1;
+    let done=false;
+    const fin=()=>{if(done)return;done=true;cb&&cb();};
+    u.onend=fin;u.onerror=fin; setTimeout(fin,12000);
+    try{window.speechSynthesis.speak(u);}catch(e){fin();}
   };
-  if (voices.length === 0){ loadVoices(); if (voices.length === 0) { setTimeout(doSpeak, 400); return; } }
-  doSpeak();
+  if (voices.length===0){ loadVoices(); if (voices.length===0){ setTimeout(go,400); return; } }
+  go();
 }
-
-let audioCtx = null;
-function beep(freq = 800, dur = 80, vol = 0.12){
-  try {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.connect(gain); gain.connect(audioCtx.destination);
-    osc.frequency.value = freq; gain.gain.value = vol;
-    osc.start(); osc.stop(audioCtx.currentTime + dur/1000);
-  } catch(_){}
+let audioCtx=null;
+function beep(f=800,d=80,vol=.12){
+  try{
+    if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state==='suspended')audioCtx.resume();
+    const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+    o.connect(g); g.connect(audioCtx.destination);
+    o.frequency.value=f; g.gain.value=vol;
+    o.start(); o.stop(audioCtx.currentTime+d/1000);
+  }catch(_){}
 }
-function beepStart(){ beep(800,70); setTimeout(()=>beep(1100,90), 90); }
-function beepStop(){ beep(500,140,0.1); }
+function beepStart(){ beep(800,70); setTimeout(()=>beep(1100,90),90); }
+function beepStop(){ beep(500,140,.1); }
 
-function hashPwd(s){ let h = 5381;
-  for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
-  return "h" + Math.abs(h).toString(36); }
-function getStoredPwdHash(){ try { const v = localStorage.getItem(PWD_STORAGE_KEY); if (v) return v; } catch(_){}
-  return hashPwd(ADMIN_PASSWORD_DEFAULT); }
-function setStoredPwdHash(hash){ try { localStorage.setItem(PWD_STORAGE_KEY, hash); return true; } catch(_){ return false; } }
-function verifyPassword(pwd){ return hashPwd(pwd) === getStoredPwdHash(); }
-
-function getStats(){ try { const raw = localStorage.getItem(STATS_STORAGE_KEY); if (raw) return JSON.parse(raw); } catch(_){}
-  return { totale:0, match:0, ko:0, fuzzy:0, oggi:0, dataOggi:todayKey(), perVia:{}, perPaese:{}, perPl:{} }; }
-function saveStats(s){ try { localStorage.setItem(STATS_STORAGE_KEY, JSON.stringify(s)); } catch(_){} }
-function todayKey(){ const d = new Date();
+/* ============================================================
+   STORAGE
+   ============================================================ */
+function hashPwd(s){ let h=5381; for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0; return "h"+Math.abs(h).toString(36); }
+function getPwdHash(){ try{const v=localStorage.getItem(PWD_STORAGE_KEY);if(v)return v;}catch(_){} return hashPwd(ADMIN_PASSWORD_DEFAULT); }
+function setPwdHash(h){ try{localStorage.setItem(PWD_STORAGE_KEY,h);return true;}catch(_){return false;} }
+function verifyPwd(p){ return hashPwd(p)===getPwdHash(); }
+function getStats(){ try{const r=localStorage.getItem(STATS_STORAGE_KEY);if(r)return JSON.parse(r);}catch(_){}
+  return {totale:0,match:0,ko:0,fuzzy:0,oggi:0,dataOggi:todayKey(),perVia:{},perPaese:{},perPl:{}}; }
+function saveStats(s){ try{localStorage.setItem(STATS_STORAGE_KEY,JSON.stringify(s));}catch(_){} }
+function todayKey(){ const d=new Date();
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
-function bumpCounter(obj, key){ if (!key) return; obj[key] = (obj[key] || 0) + 1; }
+function bump(o,k){ if(!k)return; o[k]=(o[k]||0)+1; }
 function recordStats(res, fuzzy){
-  const s = getStats();
-  if (s.dataOggi !== todayKey()){ s.dataOggi = todayKey(); s.oggi = 0; }
+  const s=getStats();
+  if (s.dataOggi!==todayKey()){ s.dataOggi=todayKey(); s.oggi=0; }
   s.totale++; s.oggi++;
-  if (res.ok){
-    s.match++; if (fuzzy) s.fuzzy++;
-    if (res.via && res.paese){ bumpCounter(s.perVia, `${res.via} (${res.paese})`); bumpCounter(s.perPaese, res.paese); }
-    if (res.portalettere && res.portalettere.length){ res.portalettere.forEach(pl => bumpCounter(s.perPl, pl)); }
-  } else { s.ko++; }
+  if (res.ok){ s.match++; if(fuzzy)s.fuzzy++;
+    if(res.via&&res.paese){ bump(s.perVia, `${res.via} (${res.paese})`); bump(s.perPaese, res.paese); }
+    if(res.portalettere) res.portalettere.forEach(pl=>bump(s.perPl,pl));
+  } else s.ko++;
   saveStats(s);
 }
-function getLog(){ try { const raw = localStorage.getItem(LOG_STORAGE_KEY); if (raw) return JSON.parse(raw); } catch(_){} return []; }
-function saveLog(log){ try { localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(log.slice(0, LOG_MAX_ENTRIES))); } catch(_){} }
-let lastLoggedKey = { text:"", ts:0 };
+function getLog(){ try{const r=localStorage.getItem(LOG_STORAGE_KEY);if(r)return JSON.parse(r);}catch(_){} return []; }
+function saveLog(l){ try{localStorage.setItem(LOG_STORAGE_KEY,JSON.stringify(l.slice(0,LOG_MAX_ENTRIES)));}catch(_){} }
+let lastLog={text:"",ts:0};
 function recordLog(raw, res, source, fuzzy){
-  const key = (raw || "").trim().toLowerCase();
-  const now = Date.now();
-  if (key === lastLoggedKey.text && (now - lastLoggedKey.ts) < 5000 && source === 'voice') return;
-  lastLoggedKey = { text:key, ts:now };
-  const log = getLog();
-  log.unshift({ ts: now, input: raw || "", esito: res.ok ? "ok" : "ko",
-    risultato: res.ok ? (res.portalettere || []).join("·") : "", fonte: source || "", fuzzy: !!fuzzy });
-  saveLog(log);
+  const k=(raw||"").trim().toLowerCase(), now=Date.now();
+  if (k===lastLog.text && now-lastLog.ts<5000 && source==='voice') return;
+  lastLog={text:k,ts:now};
+  const l=getLog();
+  l.unshift({ts:now, input:raw||"", esito:res.ok?"ok":"ko",
+    risultato:res.ok?(res.portalettere||[]).join("·"):"", fonte:source||"", fuzzy:!!fuzzy});
+  saveLog(l);
 }
 
-const $ = id => document.getElementById(id);
-const bigNum = $("bigNum"), addrEl = $("addr"), noteEl = $("note
+/* ============================================================
+   UI
+   ============================================================ */
+const $=id=>document.getElementById(id);
+const bigNum=$("bigNum"), addrEl=$("addr"), noteEl=$("note"), fzEl=$("fuzzyNote"),
+  liveEl=$("live"), statusTextEl=$("statusText"), dotEl=$("dot"),
+  micBtn=$("micBtn"), historyEl=$("history"), headerState=$("headerState");
+let history=[];
+function setDot(s){ dotEl.className="dot"+(s?" "+s:""); }
+function setStatus(t){ statusTextEl.textContent=t; }
+function setHeader(t){ headerState.textContent=t; }
+function setLive(t){ liveEl.innerHTML = t ? `<b>🎤</b> ${esc(t)}` : ""; }
+function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function renderResult(res, raw){
+  if (res.ok){
+    bigNum.textContent=(res.portalettere||[]).join(" · ");
+    addrEl.textContent=res.message;
+    noteEl.textContent=`Comando: "${raw}"`;
+    if (res.fuzzy){ fzEl.style.display="block"; fzEl.textContent=`🔄 Interpretato come: "${res.corrected}" (${Math.round((res.fuzzySim||0)*100)}%)`; }
+    else { fzEl.style.display="none"; fzEl.textContent=""; }
+  } else {
+    bigNum.textContent="?";
+    addrEl.textContent="Nessuna corrispondenza";
+    noteEl.textContent=res.message+(res.transcript?` — ho sentito: "${res.transcript}"`:"");
+    fzEl.style.display="none";
+  }
+  const shown=(res.portalettere||[]).join(" · ")||"?";
+  const suf = res.fuzzy?" 🔄":"";
+  history.unshift({raw,shown,suf}); history=history.slice(0,5);
+  historyEl.innerHTML=history.map(h=>`<li><b>${esc(h.shown)}${h.suf}</b> — ${esc(h.raw)}</li>`).join("")||"<li>Nessuna richiesta.</li>";
+}
+
+/* ============================================================
+   RICONOSCIMENTO VOCALE
+   ============================================================ */
+let rec=null, wantListening=false, speaking=false, processing=false;
+function initRec(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if (!SR) return null;
+  const r=new SR();
+  r.lang="it-IT"; r.continuous=true; r.interimResults=true; r.maxAlternatives=1;
+  r.onresult=(ev)=>{
+    let interim="", fin="";
+    for(let i=ev.resultIndex;i<ev.results.length;i++){
+      const rs=ev.results[i];
+      if(rs.isFinal) fin+=rs[0].transcript+" "; else interim+=rs[0].transcript;
+    }
+    if(!processing&&!speaking&&interim) setLive(interim);
+    if(!processing&&!speaking&&fin.trim()){
+      setLive(fin.trim());
+      try{ handle(fin.trim(),'voice'); }catch(e){ console.error(e); processing=false; speaking=false; }
+    }
+  };
+  r.onstart=()=>{ if(wantListening){ setDot('listening'); setStatus('🔴 In ascolto continuo'); setHeader('in ascolto'); } };
+  r.onerror=(e)=>{ if(e.error==="not-allowed"||e.error==="service-not-allowed"){
+    wantListening=false; setDot('error'); setStatus('⚠️ Permesso microfono negato'); setHeader('errore'); updateMicBtn(); } };
+  r.onend=()=>{ if(wantListening && !speaking) setTimeout(startRec,150); };
+  return r;
+}
+function startRec(){ if(!rec||!wantListening||speaking) return;
+  try{ rec.start(); }catch(e){ if(e.name==='InvalidStateError') return; setTimeout(startRec,500); } }
+function updateMicBtn(){
+  if(wantListening){ micBtn.classList.add("on"); micBtn.textContent="⏹️ Ferma microfono"; }
+  else { micBtn.classList.remove("on"); micBtn.textContent="🎙️ Attiva microfono";
+    setDot(''); setStatus('Microfono spento'); setHeader('inattivo'); }
+}
+function handle(text, source){
+  if(processing||speaking) return;
+  processing=true;
+  const res = lookupSmart(text);
+  if(!res.ok && source==='voice'){ processing=false; setLive(""); return; }
+  renderResult(res, text); setLive("");
+  recordStats(res, !!res.fuzzy);
+  recordLog(text, res, source, !!res.fuzzy);
+  if(!res.ok){ processing=false; return; }
+  speaking=true; setDot('speaking'); setStatus('🔊 Sto rispondendo…'); setHeader('risposta');
+  try{ rec && rec.stop(); }catch(_){}
+  const speech = prepareSpeechText(res.portalettere);
+  speak(speech, ()=>{
+    speaking=false; processing=false;
+    if(wantListening) setTimeout(startRec,450);
+    else { setDot(''); setStatus('Microfono spento'); setHeader('inattivo'); }
+  });
+}
+function toggleMic(){
+  if(!rec){ setDot('error'); setStatus("⚠️ Riconoscimento vocale non supportato. Usa Chrome/Edge."); return; }
+  if(wantListening){
+    wantListening=false;
+    try{ window.speechSynthesis && window.speechSynthesis.cancel(); }catch(_){}
+    try{ rec.stop(); }catch(_){}
+    beepStop(); updateMicBtn();
+  } else {
+    wantListening=true;
+    micBtn.classList.add("on"); micBtn.textContent="⏹️ Ferma microfono";
+    setDot('listening'); setStatus('Attivazione…'); setHeader('attivazione');
+    beepStart(); startRec();
+  }
+}
+
+/* ============================================================
+   CSV
+   ============================================================ */
+function detSep(t){ const f=t.split(/\r?\n/)[0]||''; return (f.split(';').length>f.split(',').length)?';':','; }
+function parseCSV(text){
+  if(text.charCodeAt(0)===0xFEFF) text=text.slice(1);
+  const sep=detSep(text), rows=[]; let row=[], cur="", q=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(q){ if(c==='"'){ if(text[i+1]==='"'){cur+='"';i++;} else q=false; } else cur+=c; }
+    else {
+      if(c==='"') q=true;
+      else if(c===sep){ row.push(cur); cur=""; }
+      else if(c==='\n'||c==='\r'){ if(c==='\r'&&text[i+1]==='\n')i++;
+        row.push(cur); cur=""; if(row.some(x=>x.trim()!=='')) rows.push(row); row=[]; }
+      else cur+=c;
+    }
+  }
+  if(cur!==""||row.length){ row.push(cur); if(row.some(x=>x.trim()!=='')) rows.push(row); }
+  return rows;
+}
+function normHdr(h){
+  const k=(h||"").trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,'_');
+  const map={via:['via','indirizzo','street','strada'],
+    da:['civico_da','da','civico_inizio','inizio','start','min'],
+    a:['civico_a','a','civico_fine','fine','end','max'],
+    civico:['civico','numero','num','civ','n'],
+    paese:['paese','comune','city','citta','localita','town'],
+    cap:['cap','zip','postal_code','codice_postale'],
+    portalettere:['portalettere','postino','pl','zona','posta','team','routing','codice']};
+  for(const key in map) if(map[key].includes(k)) return key;
+  return null;
+}
+function rowsToEntries(rows){
+  if(!rows.length) return [];
+  const first=rows[0].map(c=>(c||'').trim().toLowerCase());
+  const hw=['via','indirizzo','civico','paese','comune','cap','portalettere','postino','zona'];
+  const has=first.some(c=>hw.some(w=>c.includes(w)));
+  let idx, dataRows;
+  if(has){
+    idx={};
+    rows[0].forEach((h,i)=>{ const k=normHdr(h); if(k&&idx[k]==null) idx[k]=i; });
+    dataRows=rows.slice(1);
+  } else { idx={via:0,da:1,a:2,paese:3,cap:4,portalettere:5}; dataRows=rows; }
+  if(idx.via==null||idx.paese==null) return [];
+  const out=[], seen=new Set();
+  for(const r of dataRows){
+    const get=k=>idx[k]!=null?(r[idx[k]]||'').trim():'';
+    const via=get('via'), paese=get('paese'), ptl=get('portalettere');
+    if(!via||!paese||!ptl) continue;
+    let da=null, a=null;
+    if(idx.civico!=null){
+      const raw=get('civico').replace(/[^\d]/g,'');
+      if(raw!==''){ const n=parseInt(raw,10); if(!isNaN(n)){ da=a=n; } }
+    } else {
+      const rda=get('da').replace(/[^\d]/g,''), ra=get('a').replace(/[^\d]/g,'');
+      const nda=rda!==''?parseInt(rda,10):null, na=ra!==''?parseInt(ra,10):null;
+      if(nda===0&&na===0){}
+      else if(nda!=null&&na!=null){ da=Math.min(nda,na); a=Math.max(nda,na); }
+      else if(nda!=null){ da=a=nda; } else if(na!=null){ da=a=na; }
+    }
+    const k=`${via.toLowerCase()}|${da}|${a}|${paese.toLowerCase()}|${ptl}`;
+    if(seen.has(k)) continue;
+    seen.add(k);
+    out.push({via, da, a, paese, cap:get('cap'), portalettere:ptl});
+  }
+  return out;
+}
+function toCSV(rows){
+  const esc=v=>{ const s=String(v==null?'':v); return /[",;\n]/.test(s)?`"${s.replace(/"/g,'""')}"`:s; };
+  const head='via,civico_da,civico_a,paese,cap,portalettere';
+  const body=rows.map(r=>[r.via, r.da==null?'':r.da, r.a==null?'':r.a, r.paese, r.cap, r.portalettere].map(esc).join(','));
+  return [head,...body].join('\r\n');
+}
+function download(fn, content){
+  const blob=new Blob([content],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=fn; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+async function loadCSVServer(url){
+  const t0=performance.now();
+  try {
+    const res = await fetch(url, {cache:'no-cache'});
+    if(!res.ok) return {ok:false, message:`File ${url} non trovato (HTTP ${res.status})`};
+    const text = await res.text();
+    const en = rowsToEntries(parseCSV(text));
+    if(!en.length) return {ok:false, message:'File letto ma nessuna riga valida.'};
+    DB = en; rebuildCaches();
+    return {ok:true, count:en.length, ms: Math.round(performance.now()-t0)};
+  } catch(e){ return {ok:false, message:e.message}; }
+}
+function loadCSVText(text){
+  const en = rowsToEntries(parseCSV(text));
+  if(!en.length) return {ok:false, message:'Nessuna riga valida.'};
+  DB = en; rebuildCaches();
+  return {ok:true, count:en.length};
+}
+
+/* ============================================================
+   ADMIN
+   ============================================================ */
+function isUnlocked(){ return sessionStorage.getItem(ADMIN_SESSION_KEY)==="1"; }
+function lockAdmin(){
+  sessionStorage.removeItem(ADMIN_SESSION_KEY);
+  $("loginView").style.display="block"; $("panelView").style.display="none";
+  $("adminPass").value=""; $("loginError").textContent="";
+  $("pwdError").textContent=""; $("pwdSuccess").textContent="";
+  $("pwdOld").value=""; $("pwdNew").value=""; $("pwdConfirm").value="";
+}
+function unlockAdmin(){
+  sessionStorage.setItem(ADMIN_SESSION_KEY,"1");
+  $("loginView").style.display="none"; $("panelView").style.display="block";
+  refreshCsvPanel(); refreshStats(); refreshLog();
+}
+function refreshCsvPanel(){
+  if(DB.length<=500){ $("csvArea").value=toCSV(DB); $("csvArea").placeholder=""; }
+  else { $("csvArea").value=""; $("csvArea").placeholder=`DB caricato con ${DB.length} righe (troppe per essere mostrate qui).`; }
+}
+function refreshStats(){
+  const s=getStats();
+  if(s.dataOggi!==todayKey()){ s.oggi=0; s.dataOggi=todayKey(); saveStats(s); }
+  $("statTotale").textContent=s.totale||0;
+  $("statOggi").textContent=s.oggi||0;
+  $("statMatch").textContent=s.totale?Math.round((s.match/s.totale)*100)+"%":"–";
+  $("statFuzzy").textContent=s.fuzzy||0;
+  const rt=(obj,tgt)=>{
+    const e=Object.entries(obj||{}).sort((a,b)=>b[1]-a[1]).slice(0,10);
+    if(!e.length){ tgt.innerHTML="<li><em>Nessun dato.</em></li>"; return; }
+    tgt.innerHTML=e.map(([k,v])=>`<li><span>${esc(k)}</span><span class="cnt">${v}</span></li>`).join("");
+  };
+  rt(s.perVia,$("statVie")); rt(s.perPaese,$("statPaesi")); rt(s.perPl,$("statPl"));
+}
+function refreshLog(){
+  const log=getLog().slice(0,50), tb=$("logBody");
+  if(!log.length){ tb.innerHTML=`<tr><td colspan="5" style="text-align:center;color:var(--m);padding:20px;">Nessuna ricerca registrata.</td></tr>`; return; }
+  tb.innerHTML=log.map(e=>{
+    const d=new Date(e.ts);
+    const ora=`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
+    const cls=e.esito==='ok'?'lok':'lko', txt=e.esito==='ok'?'✓':'✗';
+    const fz=e.fuzzy?' <span class="lfz">🔄</span>':'';
+    return `<tr><td>${ora}</td><td>${esc(e.input)}${fz}</td><td class="${cls}">${txt}</td><td>${esc(e.risultato||'–')}</td><td>${esc(e.fonte||'–')}</td></tr>`;
+  }).join("");
+}
+function openAdmin(){
+  if(wantListening){ wantListening=false; try{ rec && rec.stop(); }catch(_){} updateMicBtn(); }
+  $("adminModal").classList.add("open");
+  if(isUnlocked()) unlockAdmin(); else { lockAdmin(); setTimeout(()=>$("adminPass").focus(),100); }
+}
+function closeAdmin(){ $("adminModal").classList.remove("open"); }
+function tryLogin(){
+  if(verifyPwd($("adminPass").value)){ $("loginError").textContent=""; unlockAdmin(); }
+  else {
+    $("loginError").textContent="❌ Password errata.";
+    $("adminBox").classList.remove("shake"); void $("adminBox").offsetWidth;
+    $("adminBox").classList.add("shake");
+    $("adminPass").value=""; $("adminPass").focus();
+  }
+}
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+document.addEventListener("DOMContentLoaded", () => {
+  rebuildCaches();
+  rec = initRec();
+  if (!rec){ setDot('error'); setStatus("⚠️ Riconoscimento vocale non supportato."); }
+
+  micBtn.addEventListener("click", toggleMic);
+  $("manualInput").addEventListener("keydown", e => {
+    if(e.key==="Enter"){ const v=e.target.value.trim(); if(!v) return; handle(v,'manual'); e.target.value=""; }
+  });
+  $("manualBtn").addEventListener("click", () => {
+    const el=$("manualInput"); const v=el.value.trim(); if(!v) return; handle(v,'manual'); el.value="";
+  });
+  $("adminBtn").addEventListener("click", openAdmin);
+  $("cancelLogin").addEventListener("click", closeAdmin);
+  $("submitLogin").addEventListener("click", tryLogin);
+  $("adminPass").addEventListener("keydown", e => {
+    if(e.key==="Enter") tryLogin(); if(e.key==="Escape") closeAdmin();
+  });
+  $("logoutBtn").addEventListener("click", () => { lockAdmin(); refreshCsvPanel(); });
+  $("closePanelBtn").addEventListener("click", closeAdmin);
+  document.querySelectorAll(".tab").forEach(t=>{
+    t.addEventListener("click", ()=>{
+      document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+      document.querySelectorAll(".tc").forEach(x=>x.classList.remove("active"));
+      t.classList.add("active"); $("tab-"+t.dataset.tab).classList.add("active");
+      if(t.dataset.tab==="stats") refreshStats();
+      if(t.dataset.tab==="log") refreshLog();
+    });
+  });
+  $("loadCsvBtn").addEventListener("click", () => {
+    const r=loadCSVText($("csvArea").value);
+    $("csvStatus").textContent = r.ok ? `✅ Caricate ${r.count} righe dalla textarea.` : `⚠️ ${r.message}`;
+  });
+  $("downloadCsvBtn").addEventListener("click", () => download("portalettere.csv", toCSV(DB)));
+  $("resetDbBtn").addEventListener("click", () => {
+    DB = DB_DEFAULT.map(x=>({...x}));
+    rebuildCaches();
+    $("csvStatus").textContent = `↺ Ripristinate ${DB.length} righe di esempio.`;
+    refreshCsvPanel();
+  });
+  $("reloadServerBtn").addEventListener("click", async () => {
+    $("csvStatus").textContent = "⏳ Ricaricamento…";
+    const r = await loadCSVServer('portalettere.csv');
+    $("csvStatus").textContent = r.ok ? `✅ ${r.count} righe ricaricate in ${r.ms} ms.` : `⚠️ ${r.message}`;
+    if(r.ok) refreshCsvPanel();
+  });
+  const ub=$("uploadBox"), fi=$("fileInput");
+  function handleFile(file){
+    if(!file) return;
+    if(!file.name.toLowerCase().endsWith('.csv') && file.type!=='text/csv'){
+      $("csvStatus").textContent = `⚠️ Il file deve essere .csv`;
+      return;
+    }
+    $("csvStatus").textContent = `⏳ Lettura di ${file.name}…`;
+    const rdr = new FileReader();
+    rdr.onload = e => {
+      const r = loadCSVText(e.target.result);
+      $("csvStatus").textContent = r.ok ? `✅ ${r.count} righe da "${file.name}".` : `⚠️ ${r.message}`;
+      if(r.ok) refreshCsvPanel();
+    };
+    rdr.onerror = () => { $("csvStatus").textContent = `⚠️ Errore di lettura.`; };
+    rdr.readAsText(file, 'UTF-8');
+  }
+  ub.addEventListener("click", ()=>fi.click());
+  fi.addEventListener("change", e => { if(e.target.files[0]) handleFile(e.target.files[0]); fi.value=""; });
+  ['dragenter','dragover'].forEach(ev=>ub.addEventListener(ev, e=>{ e.preventDefault(); e.stopPropagation(); ub.classList.add("dragover"); }));
+  ['dragleave','drop'].forEach(ev=>ub.addEventListener(ev, e=>{ e.preventDefault(); e.stopPropagation(); ub.classList.remove("dragover"); }));
+  ub.addEventListener("drop", e=>{ if(e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+  $("resetStatsBtn").addEventListener("click", ()=>{
+    if(!confirm("Azzerare tutte le statistiche?")) return;
+    saveStats({totale:0,match:0,ko:0,fuzzy:0,oggi:0,dataOggi:todayKey(),perVia:{},perPaese:{},perPl:{}});
+    refreshStats();
+  });
+  $("exportLogBtn").addEventListener("click", ()=>{
+    const log=getLog(); if(!log.length){ alert("Nessuna voce."); return; }
+    const head="timestamp,input,esito,risultato,fonte,fuzzy";
+    const esc=v=>{ const s=String(v==null?'':v); return /[",;\n]/.test(s)?`"${s.replace(/"/g,'""')}"`:s; };
+    const body=log.map(e=>[new Date(e.ts).toISOString(), e.input, e.esito, e.risultato, e.fonte, e.fuzzy].map(esc).join(","));
+    download(`log_ricerche_${todayKey()}.csv`, [head,...body].join("\r\n"));
+  });
+  $("resetLogBtn").addEventListener("click", ()=>{
+    if(!confirm("Cancellare tutto il log?")) return;
+    saveLog([]); refreshLog();
+  });
+  $("savePwdBtn").addEventListener("click", ()=>{
+    const o=$("pwdOld").value, n=$("pwdNew").value, c=$("pwdConfirm").value;
+    $("pwdError").textContent=""; $("pwdSuccess").textContent="";
+    if(!verifyPwd(o)){ $("pwdError").textContent="❌ Password attuale errata."; return; }
+    if(n.length<4){ $("pwdError").textContent="⚠️ Minimo 4 caratteri."; return; }
+    if(n!==c){ $("pwdError").textContent="⚠️ Le password non coincidono."; return; }
+    if(setPwdHash(hashPwd(n))){
+      $("pwdSuccess").textContent="✅ Password aggiornata.";
+      $("pwdOld").value=""; $("pwdNew").value=""; $("pwdConfirm").value="";
+    } else $("pwdError").textContent="⚠️ localStorage bloccato.";
+  });
+  $("resetPwdBtn").addEventListener("click", ()=>{
+    if(!confirm("Ripristinare la password a '123456'?")) return;
+    if(setPwdHash(hashPwd(ADMIN_PASSWORD_DEFAULT))){
+      $("pwdSuccess").textContent="↺ Password ripristinata a 123456.";
+      $("pwdError").textContent="";
+    }
+  });
+  (async ()=>{
+    const r = await loadCSVServer('portalettere.csv');
+    if(r.ok) console.info(`[SortVox] ${r.count} righe da portalettere.csv in ${r.ms} ms.`);
+    else console.info(`[SortVox] ${r.message} — uso DB esempio (${DB.length} righe).`);
+  })();
+});
+</script>
+</body>
+</html>
