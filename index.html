@@ -281,7 +281,8 @@ const SYNONYM_GROUPS = [
   ["poles","polesine"],
   ["ates","atestino"],
   ["vi","viminario"],
-  ["rio","viminario"]
+  ["rio","viminario"],
+  ["nicolo", "nicolò", "nicol", "nicola", "nicholo"] // <-- AGGIUNTO QUI
 ];
 const COUNTRY_EXPANSIONS = {
   "CAMPO S.MARTINO":"Campo San Martino",
@@ -300,18 +301,24 @@ const COUNTRY_EXPANSIONS = {
   "LOZZO ATES.":"Lozzo Atestino",
   "PONTE S.NICOLO'":"Ponte San Nicolo",
   "PONTE S. NICOLO'":"Ponte San Nicolo",
+  "PONTE SAN NICOLO'":"Ponte San Nicolo", // <-- AGGIUNTO
+  "PONTE SAN NICOLÒ":"Ponte San Nicolo",  // <-- AGGIUNTO
   "NOVENTA PAD.":"Noventa Padovana",
   "MEGLIADINO S. V.":"Megliadino San Vitale",
   "S. PIETRO IN GU":"San Pietro in Gu",
   "SANT'ELENA":"Sant Elena"
 };
 
-/* FIX A: normalizzazione con rimozione accenti */
 function normalize(s){
   return (s||"").toLowerCase()
     .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-    .replace(/[''`]/g," ")
-    .replace(/[.,;:!?'"()\[\]\/]/g," ").replace(/\s+/g," ").trim();
+    .replace(/Ã’/g, "o") // Corregge NICOLÃ’ in NICOLO
+    .replace(/Ã¨/g, "e") // Corregge Ã¨ in E
+    .replace(/Ã¹/g, "u") // Corregge Ã¹ in U
+    .replace(/Ã /g, "a") // Corregge Ã  in A
+    .replace(/[''`’]/g," ")
+    .replace(/[.,;:!?'"()\[\]\/\?]/g," ")
+    .replace(/\s+/g," ").trim();
 }
 function preprocessAbbreviations(s){
   return String(s)
@@ -431,7 +438,7 @@ function findTopMatches(tt, cands, n){
   sc.sort((a,b)=>b.sim-a.sim);
   return sc.slice(0,n);
 }
-/* FIX C: skip via===paese anche nel fuzzy */
+
 function fuzzyCorrect(raw){
   let t = replaceNumbers(normalize(raw));
   const tok = t.split(" ").filter(Boolean);
@@ -481,7 +488,6 @@ function containsCountry(text, paese){
   return false;
 }
 
-/* FIX B: skip via===paese anche nel lookup esatto */
 function lookup(raw){
   if (!raw || !raw.trim()) return {ok:false, message:"Nessun testo."};
   let t = normalize(preprocessAbbreviations(raw));
@@ -541,7 +547,6 @@ function lookupSmart(raw){
   return ex;
 }
 
-/* RICONOSCIMENTO ORARIO */
 function isTimeRequest(text){
   const t = normalize(text);
   const patterns = [
