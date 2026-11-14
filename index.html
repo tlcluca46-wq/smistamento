@@ -50,6 +50,8 @@ button:active{transform:scale(.97)}
 .manual input:focus{outline:none;border-color:var(--y)}
 .live{margin-top:10px;color:var(--m);font-style:italic;min-height:1.4em}
 .live b{color:var(--t);font-style:normal}
+.suggerimento{font-size:0.85rem; color:var(--m); margin-top:12px; text-align:center; line-height:1.4;}
+.suggerimento strong{color:var(--y);}
 .history{list-style:none;padding:0;margin:0}
 .history li{padding:8px 0;border-bottom:1px solid #1E4C8A;font-size:.9rem;color:var(--m)}
 .history li b{color:var(--y);font-size:1.05rem}
@@ -127,6 +129,9 @@ button:active{transform:scale(.97)}
     <div class="controls">
       <button class="mic" id="micBtn">🎙️ Attiva microfono</button>
       <span class="status" id="status"><span class="dot" id="dot"></span><span id="statusText">Microfono spento</span></span>
+    </div>
+    <div class="suggerimento">
+      💡 Suggerimento: pronuncia <strong>"Cerca"</strong> prima dell'indirizzo (es. <em>"Cerca Via Roma 111, Catania"</em>).
     </div>
     <div class="live" id="live"></div>
     <div class="manual" style="margin-top:16px">
@@ -715,6 +720,9 @@ function renderResult(res, raw){
 }
 
 let rec=null, wantListening=false, speaking=false, processing=false;
+let attesaComando = false;
+let timerAttesa = null;
+
 function initRec(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if (!SR) return null;
@@ -726,13 +734,38 @@ function initRec(){
       const rs=ev.results[i];
       if(rs.isFinal) fin+=rs[0].transcript+" "; else interim+=rs[0].transcript;
     }
-    if(!processing&&!speaking&&interim) setLive(interim);
-    if(!processing&&!speaking&&fin.trim()){
-      setLive(fin.trim());
-      try{ handle(fin.trim(),'voice'); }catch(e){ console.error(e); processing=false; speaking=false; }
+    
+    if(!processing && !speaking) {
+      setLive(interim || fin);
+      
+      if(fin.trim()){
+        const t = fin.toLowerCase();
+        const idx = t.lastIndexOf("cerca");
+        
+        if (idx !== -1) {
+            const comando = fin.substring(idx + 5).replace(/^[^a-zA-Z0-9]+/, '').trim();
+            
+            if (comando.length > 2) {
+                handle(comando, 'voice');
+                attesaComando = false;
+                if(timerAttesa) clearTimeout(timerAttesa);
+            } else {
+                attesaComando = true;
+                beep(1200, 50); // Bip di conferma
+                if(timerAttesa) clearTimeout(timerAttesa);
+                timerAttesa = setTimeout(() => { attesaComando = false; setLive(""); }, 5000);
+            }
+        } else if (attesaComando) {
+            handle(fin.trim(), 'voice');
+            attesaComando = false;
+            if(timerAttesa) clearTimeout(timerAttesa);
+        } else {
+            setTimeout(()=>{ if(!processing && !speaking && !attesaComando) setLive(""); }, 1500);
+        }
+      }
     }
   };
-  r.onstart=()=>{ if(wantListening){ setDot('listening'); setStatus('🔴 In ascolto continuo'); setHeader('in ascolto'); } };
+  r.onstart=()=>{ if(wantListening){ setDot('listening'); setStatus('🔴 In ascolto (dì "Cerca...")'); setHeader('in ascolto'); } };
   r.onerror=(e)=>{ if(e.error==="not-allowed"||e.error==="service-not-allowed"){
     wantListening=false; setDot('error'); setStatus('⚠️ Permesso microfono negato'); setHeader('errore'); updateMicBtn(); } };
   r.onend=()=>{ if(wantListening && !speaking) setTimeout(startRec,150); };
@@ -793,6 +826,8 @@ function toggleMic(){
     try{ window.speechSynthesis && window.speechSynthesis.cancel(); }catch(_){}
     try{ rec.stop(); }catch(_){}
     beepStop(); updateMicBtn();
+    attesaComando = false;
+    if(timerAttesa) clearTimeout(timerAttesa);
   } else {
     wantListening=true;
     micBtn.classList.add("on"); micBtn.textContent="⏹️ Ferma microfono";
