@@ -264,8 +264,36 @@ function _var(n){ if(n===0)return["zero"]; if(n<100)return[_b100(n)];
   return out; }
 const NUM_MAP={};
 for(let n=0;n<=999;n++)for(const w of _var(n)){ NUM_MAP[w]=String(n); if(w.endsWith("tre")&&w!=="tre")NUM_MAP[w.slice(0,-3)+"tré"]=String(n); }
-function replaceNumbers(t){ return t.split(" ").map(x=>NUM_MAP[x]||x).join(" "); }
+
 function numberToItWords(n){ n=parseInt(n,10); if(isNaN(n)||n<0||n>999)return String(n); let w=_var(n)[0]; if(w.endsWith("tre")&&w!=="tre")w=w.slice(0,-3)+"tré"; return w; }
+
+function romanToArabic(roman) {
+  const map = { I: 1, V: 5, X: 10, L: 50, C: 100, D: 500, M: 1000 };
+  let result = 0;
+  const s = roman.toUpperCase();
+  for (let i = 0; i < s.length; i++) {
+    const current = map[s[i]];
+    const next = map[s[i + 1]];
+    if (next && current < next) {
+      result += next - current;
+      i++;
+    } else {
+      result += current;
+    }
+  }
+  return result;
+}
+
+function replaceNumbers(text){
+  return text.split(" ").map(x => {
+    if (NUM_MAP[x]) return NUM_MAP[x];
+    if (/^[IVXLCDM]{2,}$/i.test(x)) {
+        const num = romanToArabic(x);
+        if (!isNaN(num) && num > 0 && num < 1000) return String(num);
+    }
+    return x;
+  }).join(" ");
+}
 
 const DUG_WORDS = new Set(["via","viale","vle","vial","viali","piazza","piazzale","piazzetta","piazzett","piaz","piazz","vicolo","vic","vico","vicò","vialetto","vialetti","corso","cso","corsi","largo","lgo","larghi","strada","str","strade","stradella","stradone","stradoni","contrada","contra","contrà","contrade","lungargine","lungadige","lungarno","lungomare","lungolago","lungopo","riviera","circonvallazione","tangenziale","svincolo","rotonda","androna","calle","calletta","callesella","fondamenta","ramo","sotoportego","sotoport","salizada","liston","ruga","galleria","gall","passaggio","pass","traversa","trav","frazione","fraz","loc","localita","località","sottopasso","cavalcavia","passeggiata","belvedere","ta"]);
 const STOPWORDS = new Set(["di","del","della","dei","degli","delle","da","dal","dalla","dai","dagli","dalle","in","a","al","alla","ai","agli","alle","e","ed","la","il","lo","le","gli","l","d","su","sul","sullo","sulla","sui","sugli","sulle","per","con","tra","fra","nel","nello","nella","nei","negli","nelle","un","uno","una"]);
@@ -282,7 +310,7 @@ const SYNONYM_GROUPS = [
   ["ates","atestino"],
   ["vi","viminario"],
   ["rio","viminario"],
-  ["nicolo", "nicolò", "nicol", "nicola", "nicholo"] // <-- AGGIUNTO QUI
+  ["nicolo", "nicolò", "nicol", "nicola", "nicholo"]
 ];
 const COUNTRY_EXPANSIONS = {
   "CAMPO S.MARTINO":"Campo San Martino",
@@ -301,8 +329,8 @@ const COUNTRY_EXPANSIONS = {
   "LOZZO ATES.":"Lozzo Atestino",
   "PONTE S.NICOLO'":"Ponte San Nicolo",
   "PONTE S. NICOLO'":"Ponte San Nicolo",
-  "PONTE SAN NICOLO'":"Ponte San Nicolo", // <-- AGGIUNTO
-  "PONTE SAN NICOLÒ":"Ponte San Nicolo",  // <-- AGGIUNTO
+  "PONTE SAN NICOLO'":"Ponte San Nicolo",
+  "PONTE SAN NICOLÒ":"Ponte San Nicolo",
   "NOVENTA PAD.":"Noventa Padovana",
   "MEGLIADINO S. V.":"Megliadino San Vitale",
   "S. PIETRO IN GU":"San Pietro in Gu",
@@ -310,15 +338,16 @@ const COUNTRY_EXPANSIONS = {
 };
 
 function normalize(s){
-  return (s||"").toLowerCase()
+  let t = (s||"").toLowerCase()
     .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-    .replace(/Ã’/g, "o") // Corregge NICOLÃ’ in NICOLO
-    .replace(/Ã¨/g, "e") // Corregge Ã¨ in E
-    .replace(/Ã¹/g, "u") // Corregge Ã¹ in U
-    .replace(/Ã /g, "a") // Corregge Ã  in A
+    .replace(/Ã’/g, "o")
+    .replace(/Ã¨/g, "e")
+    .replace(/Ã¹/g, "u")
+    .replace(/Ã /g, "a")
     .replace(/[''`’]/g," ")
     .replace(/[.,;:!?'"()\[\]\/\?]/g," ")
     .replace(/\s+/g," ").trim();
+  return replaceNumbers(t);
 }
 function preprocessAbbreviations(s){
   return String(s)
@@ -440,7 +469,7 @@ function findTopMatches(tt, cands, n){
 }
 
 function fuzzyCorrect(raw){
-  let t = replaceNumbers(normalize(raw));
+  let t = normalize(raw);
   const tok = t.split(" ").filter(Boolean);
   const tns = tok.filter(x => x && x.length>1 && !STOPWORDS.has(x) && !DUG_WORDS.has(x));
   if (!tns.length) return null;
@@ -491,7 +520,6 @@ function containsCountry(text, paese){
 function lookup(raw){
   if (!raw || !raw.trim()) return {ok:false, message:"Nessun testo."};
   let t = normalize(preprocessAbbreviations(raw));
-  t = replaceNumbers(t);
   const pairs=[], seen=new Set();
   for (const e of DB){
     const via = normalize(e.via), paese = normalize(e.paese);
