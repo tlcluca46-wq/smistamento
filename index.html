@@ -50,8 +50,6 @@ button:active{transform:scale(.97)}
 .manual input:focus{outline:none;border-color:var(--y)}
 .live{margin-top:10px;color:var(--m);font-style:italic;min-height:1.4em}
 .live b{color:var(--t);font-style:normal}
-.suggerimento{font-size:0.85rem; color:var(--m); margin-top:12px; text-align:center; line-height:1.4;}
-.suggerimento strong{color:var(--y);}
 .history{list-style:none;padding:0;margin:0}
 .history li{padding:8px 0;border-bottom:1px solid #1E4C8A;font-size:.9rem;color:var(--m)}
 .history li b{color:var(--y);font-size:1.05rem}
@@ -94,6 +92,33 @@ button:active{transform:scale(.97)}
 .lfz{color:#FFCC66;font-size:.75rem}
 .af{text-align:center;padding:22px 16px 32px;color:var(--m);font-size:.8rem;line-height:1.6;border-top:1px solid rgba(255,255,255,.06);margin-top:20px}
 .af strong{color:var(--y);font-weight:700}
+
+/* Ottimizzazione Mobile */
+@media (max-width: 640px) {
+    main { padding: 12px; }
+    header { padding: 10px 14px; }
+    .lw img { height: 32px; }
+    .lw .an { font-size: 1rem; }
+    .hs { font-size: 0.7rem; padding: 4px 10px; }
+    .ab { padding: 6px 10px; font-size: 0.75rem; }
+    .card { padding: 16px; }
+    .result { flex-direction: column; align-items: stretch; gap: 16px; }
+    .big { min-width: 100%; }
+    .big .num { font-size: 3.2rem; }
+    .details .addr { font-size: 1.15rem; }
+    .controls { flex-direction: column; gap: 10px; }
+    .mic { width: 100%; min-width: auto; }
+    .status { justify-content: center; }
+    .manual { flex-direction: column; }
+    .manual button { width: 100%; }
+    .modal { padding: 16px; border-radius: 12px; }
+    .tabs { flex-direction: column; }
+    .tab { border-radius: 8px; border-bottom: none; border-left: 3px solid transparent; margin-bottom: 0; text-align: left; padding: 10px; }
+    .tab.active { border-left-color: var(--y); background: rgba(243,216,41,.08); }
+    .ma { flex-direction: column-reverse; }
+    .ma button { width: 100%; }
+    .sg { grid-template-columns: 1fr 1fr; }
+}
 </style>
 </head>
 <body>
@@ -129,9 +154,6 @@ button:active{transform:scale(.97)}
     <div class="controls">
       <button class="mic" id="micBtn">🎙️ Attiva microfono</button>
       <span class="status" id="status"><span class="dot" id="dot"></span><span id="statusText">Microfono spento</span></span>
-    </div>
-    <div class="suggerimento">
-      💡 Suggerimento: pronuncia <strong>"Cerca"</strong> prima dell'indirizzo (es. <em>"Cerca Via Roma 111, Catania"</em>).
     </div>
     <div class="live" id="live"></div>
     <div class="manual" style="margin-top:16px">
@@ -720,9 +742,6 @@ function renderResult(res, raw){
 }
 
 let rec=null, wantListening=false, speaking=false, processing=false;
-let attesaComando = false;
-let timerAttesa = null;
-
 function initRec(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if (!SR) return null;
@@ -734,38 +753,13 @@ function initRec(){
       const rs=ev.results[i];
       if(rs.isFinal) fin+=rs[0].transcript+" "; else interim+=rs[0].transcript;
     }
-    
-    if(!processing && !speaking) {
-      setLive(interim || fin);
-      
-      if(fin.trim()){
-        const t = fin.toLowerCase();
-        const idx = t.lastIndexOf("cerca");
-        
-        if (idx !== -1) {
-            const comando = fin.substring(idx + 5).replace(/^[^a-zA-Z0-9]+/, '').trim();
-            
-            if (comando.length > 2) {
-                handle(comando, 'voice');
-                attesaComando = false;
-                if(timerAttesa) clearTimeout(timerAttesa);
-            } else {
-                attesaComando = true;
-                beep(1200, 50); // Bip di conferma
-                if(timerAttesa) clearTimeout(timerAttesa);
-                timerAttesa = setTimeout(() => { attesaComando = false; setLive(""); }, 5000);
-            }
-        } else if (attesaComando) {
-            handle(fin.trim(), 'voice');
-            attesaComando = false;
-            if(timerAttesa) clearTimeout(timerAttesa);
-        } else {
-            setTimeout(()=>{ if(!processing && !speaking && !attesaComando) setLive(""); }, 1500);
-        }
-      }
+    if(!processing&&!speaking&&interim) setLive(interim);
+    if(!processing&&!speaking&&fin.trim()){
+      setLive(fin.trim());
+      try{ handle(fin.trim(),'voice'); }catch(e){ console.error(e); processing=false; speaking=false; }
     }
   };
-  r.onstart=()=>{ if(wantListening){ setDot('listening'); setStatus('🔴 In ascolto (dì "Cerca...")'); setHeader('in ascolto'); } };
+  r.onstart=()=>{ if(wantListening){ setDot('listening'); setStatus('🔴 In ascolto continuo'); setHeader('in ascolto'); } };
   r.onerror=(e)=>{ if(e.error==="not-allowed"||e.error==="service-not-allowed"){
     wantListening=false; setDot('error'); setStatus('⚠️ Permesso microfono negato'); setHeader('errore'); updateMicBtn(); } };
   r.onend=()=>{ if(wantListening && !speaking) setTimeout(startRec,150); };
@@ -826,8 +820,6 @@ function toggleMic(){
     try{ window.speechSynthesis && window.speechSynthesis.cancel(); }catch(_){}
     try{ rec.stop(); }catch(_){}
     beepStop(); updateMicBtn();
-    attesaComando = false;
-    if(timerAttesa) clearTimeout(timerAttesa);
   } else {
     wantListening=true;
     micBtn.classList.add("on"); micBtn.textContent="⏹️ Ferma microfono";
@@ -922,6 +914,7 @@ async function loadCSVServer(url){
     const en = rowsToEntries(parseCSV(text));
     if(!en.length) return {ok:false, message:'File letto ma nessuna riga valida.'};
     DB = en; rebuildCaches();
+    try { localStorage.setItem("assistente_csv_cache", text); } catch(_){}
     return {ok:true, count:en.length, ms: Math.round(performance.now()-t0)};
   } catch(e){ return {ok:false, message:e.message}; }
 }
@@ -929,6 +922,7 @@ function loadCSVText(text){
   const en = rowsToEntries(parseCSV(text));
   if(!en.length) return {ok:false, message:'Nessuna riga valida.'};
   DB = en; rebuildCaches();
+  try { localStorage.setItem("assistente_csv_cache", text); } catch(_){}
   return {ok:true, count:en.length};
 }
 
@@ -1026,6 +1020,7 @@ document.addEventListener("DOMContentLoaded", () => {
   $("resetDbBtn").addEventListener("click", () => {
     DB = DB_DEFAULT.map(x=>({...x}));
     rebuildCaches();
+    try { localStorage.removeItem("assistente_csv_cache"); } catch(_){}
     $("csvStatus").textContent = `↺ Ripristinate ${DB.length} righe di esempio.`;
     refreshCsvPanel();
   });
@@ -1092,8 +1087,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
   (async ()=>{
-    const r = await loadCSVServer('portalettere.csv');
-    if(r.ok) console.info(`[SortVox] ${r.count} righe da portalettere.csv in ${r.ms} ms.`);
+    // 1. Prova a caricare il CSV dal server (per avere sempre l'ultima versione)
+    let r = await loadCSVServer('portalettere.csv');
+    
+    // 2. Se fallisce (es. offline), usa la cache locale (localStorage)
+    if(!r.ok) {
+        const cached = localStorage.getItem("assistente_csv_cache");
+        if(cached) {
+            const rc = loadCSVText(cached);
+            if(rc.ok) r = {ok:true, count:rc.count, ms:0};
+        }
+    }
+    
+    // 3. Se anche la cache fallisce, usa il DB di esempio
+    if(r.ok) console.info(`[SortVox] ${r.count} righe caricate automaticamente.`);
     else console.info(`[SortVox] ${r.message} — uso DB esempio (${DB.length} righe).`);
   })();
 });
