@@ -508,16 +508,14 @@ function fuzzyCorrect(raw){
   
   for (const v of topV) for (const p of topP){
     if (normalize(v.match) === normalize(p.match)) continue;
-    
-    // FIX: Se nell'input c'è già una parola che corrisponde esattamente alla via del DB,
-    // il fuzzy non deve sovrascriverla con una parola diversa.
-    const viaToken = tokenizeNoStop(v.match)[0];
-    if (viaToken && tns.includes(viaToken)) {
-        const corr = [v.match, civ, p.match].filter(Boolean).join(" ");
-        const r = lookup(corr);
-        if (r.ok) return {text:corr, result:r, via:v.match, paese:p.match, civico:civ?parseInt(civ,10):null, sim:(v.sim+p.sim)/2};
+
+    // FIX: Se la via è una parola del nome del paese, scartala
+    const vTokens = tokenizeNoStop(v.match);
+    const pTokens = countryToTokens(p.match);
+    if (vTokens.length > 0 && vTokens.every(vt => pTokens.includes(vt))) {
+        continue;
     }
-    
+
     const corr = [v.match, civ, p.match].filter(Boolean).join(" ");
     let r = lookup(corr);
     if (r.ok) return {text:corr, result:r, via:v.match, paese:p.match, civico:civ?parseInt(civ,10):null, sim:(v.sim+p.sim)/2};
@@ -563,6 +561,12 @@ function lookup(raw){
     const k = via+"||"+paese;
     if (seen.has(k)) continue;
     if (via === paese) continue;
+
+    // FIX: Scarta via se tutte le sue parole fanno parte del paese
+    const viaTokens = tokenizeNoStop(e.via);
+    const paeseTokens = countryToTokens(e.paese);
+    if (viaTokens.length > 0 && viaTokens.every(vt => paeseTokens.includes(vt))) continue;
+
     if (containsWord(t, via) && containsCountry(t, e.paese)){
       seen.add(k);
       pairs.push({via, paese, score: via.length+paese.length});
