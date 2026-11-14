@@ -505,18 +505,28 @@ function fuzzyCorrect(raw){
   if (!topV.length || !topP.length) return null;
   const civM = t.match(/\b(\d{1,4})\b/);
   const civ = civM ? civM[1] : "";
+  
   for (const v of topV) for (const p of topP){
     if (normalize(v.match) === normalize(p.match)) continue;
+    
+    // FIX: Se nell'input c'è già una parola che corrisponde esattamente alla via del DB,
+    // il fuzzy non deve sovrascriverla con una parola diversa.
+    const viaToken = tokenizeNoStop(v.match)[0];
+    if (viaToken && tns.includes(viaToken)) {
+        const corr = [v.match, civ, p.match].filter(Boolean).join(" ");
+        const r = lookup(corr);
+        if (r.ok) return {text:corr, result:r, via:v.match, paese:p.match, civico:civ?parseInt(civ,10):null, sim:(v.sim+p.sim)/2};
+    }
+    
     const corr = [v.match, civ, p.match].filter(Boolean).join(" ");
     let r = lookup(corr);
-    if (r.ok) return {text:corr, result:r, via:v.match, paese:p.match,
-      civico:civ?parseInt(civ,10):null, sim:(v.sim+p.sim)/2};
+    if (r.ok) return {text:corr, result:r, via:v.match, paese:p.match, civico:civ?parseInt(civ,10):null, sim:(v.sim+p.sim)/2};
+    
     const exp = COUNTRY_EXPANSIONS[p.match.toUpperCase()];
     if (exp){
       const corr2 = [v.match, civ, exp].filter(Boolean).join(" ");
       r = lookup(corr2);
-      if (r.ok) return {text:corr2, result:r, via:v.match, paese:p.match,
-        civico:civ?parseInt(civ,10):null, sim:(v.sim+p.sim)/2};
+      if (r.ok) return {text:corr2, result:r, via:v.match, paese:p.match, civico:civ?parseInt(civ,10):null, sim:(v.sim+p.sim)/2};
     }
   }
   return null;
@@ -727,7 +737,11 @@ function renderResult(res, raw){
     bigNum.textContent=(res.portalettere||[]).join(" · ");
     addrEl.textContent=res.message;
     noteEl.textContent=`Comando: "${raw}"`;
-    if (res.fuzzy){ fzEl.style.display="block"; fzEl.textContent=`🔄 Interpretato come: "${res.corrected}" (${Math.round((res.fuzzySim||0)*100)}%)`; }
+    if (res.fuzzy){
+      fzEl.style.display="block";
+      const pct = Math.min(100, Math.round((res.fuzzySim||0)*100));
+      fzEl.textContent=`🔄 Interpretato come: "${res.corrected}" (${pct}%)`;
+    }
     else { fzEl.style.display="none"; fzEl.textContent=""; }
   } else {
     bigNum.textContent="?";
