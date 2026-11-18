@@ -488,7 +488,13 @@ function findTopMatches(tt, cands, n){
   const sc=[];
   for (const c of cands){
     if (!c.tokens||!c.tokens.length) continue;
-    const s=bestAlignment(tt, c.tokens);
+    let s=bestAlignment(tt, c.tokens);
+    
+    // FIX: Se tutti i token della via sono presenti (in qualsiasi ordine), forziamo il match
+    if (s < FUZZY_THRESHOLD && c.tokens.every(ct => tt.includes(ct))) {
+        s = 1.0;
+    }
+    
     if (s>=FUZZY_THRESHOLD) sc.push({match:c.orig, sim:s});
   }
   sc.sort((a,b)=>b.sim-a.sim);
@@ -509,7 +515,6 @@ function fuzzyCorrect(raw){
   for (const v of topV) for (const p of topP){
     if (normalize(v.match) === normalize(p.match)) continue;
 
-    // FIX: Se la via è una parola del nome del paese, scartala
     const vTokens = tokenizeNoStop(v.match);
     const pTokens = countryToTokens(p.match);
     if (vTokens.length > 0 && vTokens.every(vt => pTokens.includes(vt))) {
@@ -555,19 +560,30 @@ function containsCountry(text, paese){
 function lookup(raw){
   if (!raw || !raw.trim()) return {ok:false, message:"Nessun testo."};
   let t = normalize(preprocessAbbreviations(raw));
+  const inputTokens = t.split(" ");
   const pairs=[], seen=new Set();
+  
   for (const e of DB){
     const via = normalize(e.via), paese = normalize(e.paese);
     const k = via+"||"+paese;
     if (seen.has(k)) continue;
     if (via === paese) continue;
 
-    // FIX: Scarta via se tutte le sue parole fanno parte del paese
     const viaTokens = tokenizeNoStop(e.via);
     const paeseTokens = countryToTokens(e.paese);
     if (viaTokens.length > 0 && viaTokens.every(vt => paeseTokens.includes(vt))) continue;
 
-    if (containsWord(t, via) && containsCountry(t, e.paese)){
+    // FIX: Matching flessibile per la via
+    let viaMatch = false;
+    if (containsWord(t, via)) {
+        viaMatch = true;
+    } else if (viaTokens.length > 0 && viaTokens.every(vt => inputTokens.includes(vt))) {
+        viaMatch = true;
+    } else if (viaTokens.length > 1 && inputTokens.includes(viaTokens[viaTokens.length - 1])) {
+        viaMatch = true;
+    }
+
+    if (viaMatch && containsCountry(t, e.paese)){
       seen.add(k);
       pairs.push({via, paese, score: via.length+paese.length});
     }
